@@ -1,0 +1,17 @@
+# Python 虚拟环境（保留 requirements.txt，不要把 venv 目录提交）
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 调试产物
+debug_*.png
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store

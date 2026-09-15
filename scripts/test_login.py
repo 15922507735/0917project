@@ -455,7 +455,7 @@ if __name__ == "__main__":
     login.click_agreement()
     # 9. 点击登录按钮
     login.click_login_btn()
-
+    driver.quit()
     # 11. 以 pytest 风格运行本文件（收集测试用例）
     # pytest.main([__file__, "-v", "-s"])
 
