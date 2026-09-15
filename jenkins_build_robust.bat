@@ -1,4 +1,7 @@
 @echo off
+REM 切换 CMD 到 UTF-8 代码页，避免中文乱码（脚本与 Python 输出都需要 UTF-8）
+chcp 65001 > nul
+set PYTHONIOENCODING=utf-8
 REM ==========================================================
 REM  Jenkins 构建脚本 - qiyuan_project (Windows)
 REM  位置：仓库根目录 (即 demo_project/)
@@ -13,7 +16,10 @@ cd /d "%~dp0"
 echo ==========================================================
 echo Jenkins 构建脚本 - qiyuan_project
 echo 工作目录: %CD%
-echo 时间: %DATE% %TIME%
+REM %DATE%/%TIME% 在中文 Windows 下会带"星期X"，容易在 Jenkins 控制台乱码。
+REM 改用 PowerShell 拿 ISO 风格的纯数字时间，避免中文。
+for /f "delims=" %%t in ('powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set BUILD_TIME=%%t
+echo 时间: %BUILD_TIME%
 echo ==========================================================
 
 REM ---- 1. 检查 Python ----
@@ -73,8 +79,10 @@ REM   4  = pytest 命令错误
 REM   5  = 未收集到用例（脚本还在骨架阶段，暂时接受）
 echo.
 echo pytest 退出码: %PYTEST_RC%
-if %PYTEST_RC% neq 0 (
-    if %PYTEST_RC% neq 5 (
+REM 注意：CMD 的多行 if 必须用 () 把整段括起来，否则换行会被当成新命令，
+REM 导致 Jenkins 控制台出现 "0 不是内部或外部命令 / 执行被中断?" 之类的乱码。
+if not %PYTEST_RC%==0 (
+    if not %PYTEST_RC%==5 (
         echo [ERROR] pytest 执行失败，退出码 %PYTEST_RC%
         exit /b %PYTEST_RC%
     ) else (

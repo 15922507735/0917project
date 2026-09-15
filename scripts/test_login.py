@@ -34,6 +34,10 @@ APP_WAIT_ACTIVITY = (
 DEVICE_NAME = "emulator-5554"
 APPIUM_SERVER = "http://127.0.0.1:4723"
 
+# 是否在 import 时建立 Appium session（默认 False，pytest 模式由 conftest.py 启动）
+# 保留该开关以便必要时单独 import 也能跑（旧 __main__ 流程已迁移到 pytest）。
+LAZY_START_APP = False
+
 # ============= 元素定位 ==============
 # 点击同意按钮（隐私协议弹窗）
 AGREEMENT_BTN = (AppiumBy.ID, f"{APP_PACKAGE}:id/submit")          # 授权弹窗同意按钮（"同意"文字）
@@ -55,21 +59,6 @@ LOGINING_BTN = (AppiumBy.ID, f"{APP_PACKAGE}:id/tvlogining")           # 昵称
 # 等待时间
 EXPECT_WAIT_TIMEOUT = 10
 
-# 进入到指定设备
-options = UiAutomator2Options()
-options.platform_name = "android"
-options.platform_version = "9"
-options.device_name = DEVICE_NAME
-options.udid = DEVICE_NAME
-options.automation_name = "UiAutomator2"
-options.unicode_keyboard = True  # 支持中文输入
-# 显式指定 app 包与启动 activity，让 Appium 自动拉起 App
-options.app_package = APP_PACKAGE
-options.app_activity = APP_ACTIVITY
-# 显式指定 app 启动过程中可能出现的多个 Activity，避免 Appium 等待错误的 SplashActivity
-options.app_wait_activity = APP_WAIT_ACTIVITY
-
-driver = None  # 占位，__main__ 里再创建 Appium session
 
 # 工具函数：dump 可见文本（在 driver 不可用时也能调用，不报错）
 def _dump_visible_texts_safe(driver, tag: str):
@@ -82,13 +71,30 @@ def _dump_visible_texts_safe(driver, tag: str):
         log.warning(f"[{tag}] dump 可见元素失败: {e}")
 
 
-def _init_appium_driver_and_accept_agreement():
-    """启动 Appium session，等待应用启动后点击"授权弹窗"同意按钮。
-    放在函数里，避免 pytest 收集阶段 import 模块时执行顶层 UI 逻辑。
+def _build_appium_options() -> UiAutomator2Options:
+    """构造 Appium UiAutomator2Options，集中维护启动参数。"""
+    options = UiAutomator2Options()
+    options.platform_name = "android"
+    options.platform_version = "9"
+    options.device_name = DEVICE_NAME
+    options.udid = DEVICE_NAME
+    options.automation_name = "UiAutomator2"
+    options.unicode_keyboard = True  # 支持中文输入
+    # 显式指定 app 包与启动 activity，让 Appium 自动拉起 App
+    options.app_package = APP_PACKAGE
+    options.app_activity = APP_ACTIVITY
+    # 显式指定 app 启动过程中可能出现的多个 Activity，避免 Appium 等待错误的 SplashActivity
+    options.app_wait_activity = APP_WAIT_ACTIVITY
+    return options
+
+
+def start_appium_and_accept_agreement():
+    """手动启动 Appium session（用于 conftest 之外的场景，例如单独脚本）。
+
+    一般情况下由 conftest.py 的 appium_driver fixture 启动。
     """
-    global driver
     log.info("等待应用启动...")
-    d = webdriver.Remote(APPIUM_SERVER, options=options)
+    d = webdriver.Remote(APPIUM_SERVER, options=_build_appium_options())
     d.implicitly_wait(EXPECT_WAIT_TIMEOUT)
     sleep(5)
     log.info(f"当前 Activity: {d.current_activity}")
@@ -97,9 +103,9 @@ def _init_appium_driver_and_accept_agreement():
         WebDriverWait(d, 10).until(
             EC.element_to_be_clickable(AGREEMENT_BTN)
         ).click()
-        log.info("已点击同意按钮")
+        log.info("已点击启动时授权弹窗的同意按钮")
     except Exception as e:
-        log.error(f"未找到同意按钮: {e}")
+        log.error(f"未找到启动时授权同意按钮: {e}")
         _dump_visible_texts_safe(d, "授权同意")
         try:
             d.save_screenshot("debug_no_agreement.png")
@@ -107,7 +113,7 @@ def _init_appium_driver_and_accept_agreement():
         except Exception:
             pass
         raise
-    driver = d
+    return d
 
 # 关闭应用弹窗（通用函数，在任何页面都可调用）
 def close_popup_if_exists(timeout: int = 3) -> bool:
@@ -427,37 +433,77 @@ class Login_Process:
 
 
 
+class TestLogin:
+    """登录流程测试用例集（pytest 风格）。
+
+    运行方式（在 scripts/ 目录下）：
+        pytest test_login.py -v -s
+        或
+        pytest -v -s              # 收集 scripts/ 下所有 test_*.py
+
+    Appium session 由 scripts/conftest.py 的 appium_driver fixture 提供（session 级），
+    Login_Process 实例由 login_process fixture 注入（用例级）。
+    """
+
+    # ---- 用例 1：验证 Appium session 与启动时授权弹窗 ----
+    def test_start_app_and_accept_agreement(self, appium_driver):
+        """验证 conftest 已启动 Appium session，并停留在授权弹窗后的页面。"""
+        log.info(f"[用例1] 当前 Activity: {appium_driver.current_activity}")
+        log.info(f"[用例1] 当前包名: {appium_driver.current_package}")
+        assert appium_driver.current_package == APP_PACKAGE, (
+            f"期望当前包名 {APP_PACKAGE}, 实际 {appium_driver.current_package}"
+        )
+
+    # ---- 用例 2：左滑三次进入主页 ----
+    def test_swipe_guide_pages(self, login_process):
+        """引导页左滑三次。"""
+        log.info("[用例2] 引导页左滑三次")
+        login_process.swipe_left_three_times()
+
+    # ---- 用例 3：连续点击进入主页 ----
+    def test_click_to_main(self, login_process):
+        """主页入口连续点击 5 次。"""
+        log.info("[用例3] 点击进入主页")
+        login_process.click_page(times=5)
+
+    # ---- 用例 4：进入"我的" → "未登录" ----
+    def test_go_mine_and_logout(self, login_process):
+        """点击底部 Tab 的"我的"，再点击"未登录"入口。"""
+        log.info("[用例4] 进入我的-未登录")
+        login_process.click_my_btn()
+        login_process.click_loginout_btn()
+
+    # ---- 用例 5：密码登录完整流程 ----
+    def test_login_with_password(self, login_process):
+        """切换密码登录 → 输入手机号/密码/验证码 → 勾选协议 → 点击登录。"""
+        log.info("[用例5] 密码登录完整流程")
+        login_process.click_go_passlogin_btn()
+        login_process.click_input_phone_btn()
+        login_process.click_input_password_btn()
+        login_process.click_input_captcha_btn()
+        login_process.click_agreement()
+        login_process.click_login_btn()
+
+
 if __name__ == "__main__":
-    # 1. 启动 Appium session 并点击启动时的"授权弹窗"同意按钮
-    _init_appium_driver_and_accept_agreement()
-
-    # 2. 创建登录流程实例（仅持有 driver，不做任何 UI 操作）
-    login = Login_Process(driver)
-
-    # 3. 授权弹窗（启动脚本顶部已点击过启动时的"授权弹窗"同意按钮）
-    #    此处不再重复点击，避免 NoSuchElementException。
-
-    # 4. 引导页：左滑三次
-    login.swipe_left_three_times()
-
-    # 5. 进入"我的" → "未登录"
-    login.click_page(times=5)
-    login.click_my_btn()
-    login.click_loginout_btn()
-
-    # 6. 切换到密码登录并输入账号
-    login.click_go_passlogin_btn()
-    login.click_input_phone_btn()
-    login.click_input_password_btn()
-    # 7. 自动识别 + 输入图形验证码
-    login.click_input_captcha_btn()
-    # 8. 勾选同意协议（登录页的复选框）
-    login.click_agreement()
-    # 9. 点击登录按钮
-    login.click_login_btn()
-    driver.quit()
-    # 11. 以 pytest 风格运行本文件（收集测试用例）
-    # pytest.main([__file__, "-v", "-s"])
+    # 兼容旧的"python scripts/test_login.py"调用方式：
+    # 调用 conftest 同款的启动函数走完整流程，最后关闭 driver。
+    log.info("通过 __main__ 入口运行登录流程（兼容模式）")
+    d = start_appium_and_accept_agreement()
+    try:
+        login = Login_Process(d)
+        login.swipe_left_three_times()
+        login.click_page(times=5)
+        login.click_my_btn()
+        login.click_loginout_btn()
+        login.click_go_passlogin_btn()
+        login.click_input_phone_btn()
+        login.click_input_password_btn()
+        login.click_input_captcha_btn()
+        login.click_agreement()
+        login.click_login_btn()
+    finally:
+        d.quit()
 
 
 
