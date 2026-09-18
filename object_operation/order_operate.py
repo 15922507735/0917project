@@ -1,7 +1,7 @@
-"""订单 / 聚合页操作层：封装「点击聚合页 → 处理位置授权 → 点击立即订购 → WebView 跳转」。
+"""订单 / 聚合页操作层：封装「点击聚合页 → 处理位置授权 → 点击立即订购 → WebView 跳转 → 返回 → 预约试驾」。
 
 依赖：
-- page_element.order_page：聚合页 / 立即订购元素
+- page_element.order_page：聚合页 / 立即订购 / 预约试驾 / WebView 返回元素
 - object_operation.first_page_operate：用于切回「发现」首页
 - object_operation.webview_operate：用于切 WebView + H5 操作
 """
@@ -18,12 +18,14 @@ from page_element.login_page import EXPECT_WAIT_TIMEOUT
 from page_element.order_page import (
     AGGREGATE_BUTTON,
     AGGREGATE_ORDER_BTN,
+    AGGREGATE_RESERVE_BTN,
     PERMISSION_ALLOW_BTN,
+    SELECT_CONFIG_BACK_BTN,
 )
 
 
 class OrderOperate:
-    """聚合页 / 订单 / 立即订购 操作封装。"""
+    """聚合页 / 订单 / 立即订购 / 预约试驾 操作封装。"""
 
     def __init__(
         self,
@@ -122,3 +124,54 @@ class OrderOperate:
 
         # 5) 断言配置选择页面加载完成
         self.webview_operate.wait_aggregate_config_page()
+        self.logger.info("配置选择页面已加载")
+
+    # ===================== 配置选择 → 返回聚合页 =====================
+    def click_select_config_back_btn(self) -> None:
+        """从配置选择 H5 返回聚合页。
+
+        步骤：
+        1) 在当前 WebView context 下点配置选择页顶部的返回按钮 (SELECT_CONFIG_BACK_BTN)；
+        2) 切回 NATIVE_APP context；
+        3) 断言聚合页的"预约试驾"按钮 (AGGREGATE_RESERVE_BTN) 已可见 = 回到聚合页。
+
+        设计：把"点返回 + 切回 + 等可见"封装成一个原子操作，
+        让用例层只需调用 click_select_config_back_btn() 即可。
+        """
+        # 1) 点 WebView 内配置选择页返回按钮
+        try:
+            self.driver.find_element(*SELECT_CONFIG_BACK_BTN).click()
+            self.logger.info("已点击配置选择页面返回按钮")
+        except Exception as e:
+            self.logger.error(
+                f"点击配置选择页面返回按钮失败: {e}, "
+                f"current_url={self.driver.current_url}"
+            )
+            raise
+
+        # 2) 切回 NATIVE_APP
+        self.webview_operate.switch_to_native()
+
+        # 3) 断言聚合页预约试驾按钮可见
+        self.webview_operate.wait_aggregate_reserve_page()
+        self.logger.info("预约试驾按钮已出现")
+
+    # ===================== 预约试驾 =====================
+    def click_aggregate_reserve_btn(self) -> None:
+        """点击聚合页的「预约试驾」按钮 (AGGREGATE_RESERVE_BTN)。
+
+        前置：APP 处于聚合页（由 click_select_config_back_btn 保证）。
+        """
+        try:
+            reserve_btn = WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.element_to_be_clickable(AGGREGATE_RESERVE_BTN),
+                f"预约试驾按钮 {self.expect_wait_timeout}s 内不可点击",
+            )
+            reserve_btn.click()
+            self.logger.info("已点击预约试驾按钮")
+        except Exception as e:
+            self.logger.error(
+                f"点击预约试驾按钮失败: {e}, "
+                f"当前 Activity: {self.driver.current_activity}"
+            )
+            raise

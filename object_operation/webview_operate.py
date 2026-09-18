@@ -179,3 +179,31 @@ class WebViewOperate:
             )
             self._dump_webview_html("debug_aggregate_config.html")
             raise
+
+    def wait_aggregate_reserve_page(self, timeout: int | None = None) -> None:
+        """断言配置选择 H5 的返回已成功：原生侧「预约试驾」按钮 (AGGREGATE_RESERVE_BTN) 可见。
+
+        流程：配置选择 H5 点返回 → 切回 NATIVE_APP → 回到聚合页 → 预约试驾按钮可见。
+        必须在 switch_to_native() 之后调用。
+
+        注意：切回 NATIVE_APP 后**不要**读 current_url —— NATIVE context 下读取会触发
+        chromedriver proxy 转发，Appium 2 UiAutomator2 server 在该路径上
+        返回 "NotYetImplementedError: Method has not yet been implemented"。
+        只读 current_activity（server 端原生支持）。
+        """
+        from page_element.order_page import AGGREGATE_RESERVE_BTN  # 延迟导入
+        wait_timeout = timeout if timeout is not None else self.expect_wait_timeout
+        try:
+            WebDriverWait(self.driver, wait_timeout).until(
+                EC.visibility_of_element_located(AGGREGATE_RESERVE_BTN),
+                f"聚合页 {wait_timeout}s 内未出现预约试驾按钮",
+            )
+            self.logger.info(
+                f"聚合页已返回, Activity={self.driver.current_activity}"
+            )
+        except Exception as e:
+            self.logger.error(
+                f"等待聚合页返回超时: {e}, "
+                f"Activity={self.driver.current_activity}"
+            )
+            raise
