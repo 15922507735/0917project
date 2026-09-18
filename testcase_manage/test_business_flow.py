@@ -1,9 +1,13 @@
 """业务流程测试用例（business_flow）。
 
 按 PO 分层设计，所有用例集中在本文件：
-- 用例只调用 LoginOperate / FirstPageOperate / OrderOperate / WebViewOperate 的方法；
-- **业务策略**：不强制清除登录。如果当前 APP 已登录（已在发现页），
-  用例 1 / 2 / 3 全部 pytest.skip，只让用例 5（点击聚合页 + 立即订购）跑主体；
+- 用例只调用 LoginOperate / FirstPageOperate / OrderOperate / WebViewOperate /
+  SeeCarOperate / ShequOperate 的方法；
+- **业务策略**：不强制清除登录。
+  * 用例 1 / 2 / 3 业务前提是'未登录'，已登录态 pytest.skip；
+  * 用例 5 业务前提是'已登录'（聚合页/立即订购），未登录态 pytest.skip；
+  * 用例 6（看车 Tab + Q05）、用例 7（社区 Tab）、用例 8（话题广场）
+    **不依赖登录态**——两种状态都跑；
 - 用例开始前自动调用 `ensure_ready()` 重置 APP 状态：
   * 探测当前是否已在「发现」首页（first_page_op.is_on_discover_page()），
     判据 = 包名在 APP 内 + 「推荐」二级 Tab 可见；
@@ -13,16 +17,19 @@
 - 用例之间不依赖彼此的 APP 状态（任何一个失败不影响下一个）；
 - 所有用例共享 session 级 driver fixture。
 
-包含 4 个用例（业务用例 1 / 2 / 3 / 5）：
+包含 7 个用例（业务用例 1 / 2 / 3 / 5 / 6 / 7 / 8）：
 - test_start_app_and_accept_agreement：冒烟，断言 APP 包名（已登录态 skip）
 - test_go_mine_and_logout：回归，进入「我的 → 未登录」（已登录态 skip）
 - test_login_with_password：冒烟 + 回归，密码登录完整流程（已登录态 skip）
-- test_click_aggregate_btn：回归，点击聚合页 + 立即订购 + WebView（**已登录态才跑**）
+- test_click_aggregate_btn：回归，点击聚合页 + 立即订购 + 配置选择页 + 返回聚合页（**未登录态 skip**）
+- test_click_seecar_btn：回归，点击看车 Tab + Q05 车型入口（**登录/未登录都跑**）
+- test_click_shequ_tab：回归，点击社区 Tab + 断言热门话题（**登录/未登录都跑**）
+- test_click_topic_square：回归，切社区页 + 点击话题广场（**登录/未登录都跑**）
 
 运行方式：
     python cli.py            # 全部用例
     python cli.py smoke      # 仅冒烟（用例 1 + 3）
-    python cli.py regression # 仅回归（用例 2 / 3 + 5）
+    python cli.py regression # 仅回归（用例 2 / 3 + 5 + 6 + 7 + 8）
     python cli.py business   # 仅业务用例
 """
 from __future__ import annotations
@@ -32,7 +39,10 @@ import pytest
 from object_operation.first_page_operate import FirstPageOperate
 from object_operation.login_operate import LoginOperate
 from object_operation.order_operate import OrderOperate
+from object_operation.seecar_operate import SeeCarOperate
 from object_operation.webview_operate import WebViewOperate
+from object_operation.shequ_operate import ShequOperate
+
 from page_element.login_page import (
     APP_PACKAGE,
     EXPECT_WAIT_TIMEOUT,
@@ -180,21 +190,24 @@ def test_login_with_password(driver, logger, is_logged_in_session):
 # ===================== 用例 5 =====================
 @pytest.mark.regression
 def test_click_aggregate_btn(driver, logger, is_logged_in_session):
-    """用例 5：点击聚合页按钮，处理位置授权弹窗，点击立即订购按钮。
+    """用例 5：点击聚合页 + 立即订购 + 配置选择页 + 返回聚合页（不点预约试驾）。
 
     操作步骤：
         1. ensure_ready 重置 APP 状态：
            - 若 APP 已在「发现」首页（已登录 + 热启动后的稳态）→ 跳过全部前置流程；
            - 若不在发现页 → 走完整前置流程（点同意 / 左滑 / 入口 5 / 兜底再点同意）；
         2. OrderOperate 内部完成：点击聚合页 + 处理位置授权 + 等待「立即订购」按钮；
-        3. 点击「立即订购」按钮，自动切到 WebView 并等待「配置选择」页加载完成。
+        3. 点击「立即订购」按钮，自动切到 WebView 并等待「配置选择」页加载完成；
+        4. 点击「配置选择」页 H5 顶部的返回按钮 → 切回 NATIVE_APP context
+           → 断言聚合页的「预约试驾」按钮已可见 = 回到聚合页（用例到此结束）。
 
     业务策略（与用例 1/2/3 互斥）：
         **已登录态才跑**——用例 5 业务前提是"已登录后才能看到聚合页 / 立即订购"。
 
     断言点：
         - click_aggregate_btn 内部断言「立即订购」按钮 (AGGREGATE_ORDER_BTN) 可见；
-        - click_aggregate_order_btn 内部断言 WebView 切 context 成功 + 配置选择页加载完成。
+        - click_aggregate_order_btn 内部断言 WebView 切 context 成功 + 配置选择页加载完成；
+        - click_select_config_back_btn 内部断言切回 NATIVE_APP + 聚合页「预约试驾」按钮可见。
     """
     if not is_logged_in_session:
         pytest.skip("未登录态：用例 5 业务前提是'已登录'，请先登录再跑")
@@ -220,4 +233,93 @@ def test_click_aggregate_btn(driver, logger, is_logged_in_session):
     order_op.click_aggregate_btn()
     # 点击立即订购按钮（自动切到 WebView 并等待「配置选择」页加载完成）
     order_op.click_aggregate_order_btn()
-    # 不切回 NATIVE_APP，保持 WebView context —— 调用方可以继续操作 H5 元素
+    # 点配置选择页面返回按钮 → 切回 NATIVE_APP → 断言已回到聚合页
+    order_op.click_select_config_back_btn()
+    logger.info("[用例5] 点击聚合页-完成")
+
+
+# ===================== 用例 6 =====================
+@pytest.mark.regression
+def test_click_seecar_btn(driver, logger):
+    """用例 6：点击「看车」Tab → 点击 Q05 车型入口。
+
+    操作步骤：
+        1. ensure_ready 重置 APP 状态（无论登录态都会跑）；
+        2. SeeCarOperate.click_entry_btn() → 点击顶部「看车」Tab；
+        3. SeeCarOperate.click_q05_icon() → 点击 Q05 车型图标。
+
+    业务策略（与用例 1/2/3 互斥）：
+        **未登录也能看到看车 Tab 与车型入口**——本用例不依赖登录态，
+        所以**不去判断 is_logged_in_session**（未登录也跑，已登录也跑）。
+
+    断言点：
+        - click_entry_btn 内部断言「看车」Tab 可点击；
+        - click_q05_icon 内部断言 Q05 图标可点击。
+    """
+    # 注意：本用例不判断登录态——看车 Tab 与 Q05 车型入口在未登录态也可见。
+    # 所以也不需要 `if not is_logged_in_session: pytest.skip(...)`。
+
+    login_op, first_page_op = _build_ops(driver, logger)
+    _ensure_ready(login_op, first_page_op, logger)
+
+    seecar_op = SeeCarOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    logger.info("[用例6] 点击看车按钮")
+    seecar_op.click_entry_btn()
+    logger.info("[用例6] 点击看车按钮-完成")
+    seecar_op.click_q05_icon()
+    logger.info("[用例6] 点击 Q05 图标-完成")
+
+# ===================== 用例 7 =====================
+@pytest.mark.regression
+def test_click_shequ_tab(driver, logger, is_logged_in_session):
+    """用例 7：点击进入社区 Tab 并断言社区页加载完成。
+
+    操作步骤：
+        1. _ensure_ready 重置 APP 状态；
+        2. ShequOperate.click_shequ_tab() → 点击底部「社区」Tab + 断言出现热门话题元素。
+
+    业务策略（与用例 1/2/3 互斥）：
+        **未登录也能看到社区 Tab**——本用例不依赖登录态，
+        所以**不去判断 is_logged_in_session**（未登录也跑，已登录也跑）。
+
+    断言点：
+        - click_shequ_tab 内部断言「社区」Tab 可点击；
+        - click_shequ_tab 内部断言「热门话题」元素 (HOT_TOPIC) 可见 = 社区页加载完成。
+    """
+    # 注意：本用例不判断登录态——社区 Tab 与热门话题在未登录态也可见。
+    login_op, first_page_op = _build_ops(driver, logger)
+    _ensure_ready(login_op, first_page_op, logger)
+
+    shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    logger.info("[用例7] 点击社区 Tab 按钮")
+    shequ_op.click_shequ_tab()
+    logger.info("[用例7] 点击社区 Tab 按钮-完成")
+
+
+# ===================== 用例 8 =====================
+@pytest.mark.regression
+def test_click_topic_square(driver, logger, is_logged_in_session):
+    """用例 8：点击话题广场按钮。
+
+    操作步骤：
+        1. _ensure_ready 重置 APP 状态；
+        2. ShequOperate.click_shequ_tab() → 切到「社区」页；
+        3. ShequOperate.click_topic_square() → 点击话题广场按钮。
+
+    业务策略：
+        **未登录也能看到话题广场按钮**——本用例不依赖登录态，
+        所以不去判断 is_logged_in_session（未登录也跑，已登录也跑）。
+
+    断言点：
+        - click_shequ_tab 内部断言社区页加载完成（热门话题元素可见）；
+        - click_topic_square 内部断言话题广场按钮可点击。
+    """
+    # 本用例不判断登录态——话题广场按钮在未登录态也可见。
+    login_op, first_page_op = _build_ops(driver, logger)
+    _ensure_ready(login_op, first_page_op, logger)
+
+    shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    logger.info("[用例8] 点击话题广场按钮")
+    shequ_op.click_shequ_tab()
+    shequ_op.click_topic_square()
+    logger.info("[用例8] 点击话题广场按钮-完成")
