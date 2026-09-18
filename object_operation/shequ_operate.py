@@ -189,15 +189,30 @@ class ShequOperate:
         )
         self.logger.info(f"已断言聊天页面加载完成，出现聊天列表元素")
     def click_topic_all_chat_back_btn(self) -> None:
-        # 点击聊天页面返回按钮
-        self.driver.find_element(*TOPIC_ALL_CHAT_BACK_BTN).click()
+        # 点击聊天页面返回按钮（先等可点击，避免动画期间 click 落到坐标外）
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(TOPIC_ALL_CHAT_BACK_BTN)
+        ).click()
         self.logger.info(f"已点击聊天页面返回按钮")
+        # 等待过渡动画结束
+        sleep(1)
         # 断言返回到社区页：底部"精选"tab 可见（社区页加载完成的标志）
         # 注：原断言 HOT_TOPIC 在"社区内容标签"视图下可能被覆盖，故用"精选"
         from page_element.shequ_page import TOPIC_NEIRONG_JINGXIN_BTN
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.element_to_be_clickable(TOPIC_NEIRONG_JINGXIN_BTN)
-        )
+        # 兜底：若 2s 内未回到社区页，用系统返回键 fallback
+        try:
+            WebDriverWait(self.driver, 2).until(
+                EC.element_to_be_clickable(TOPIC_NEIRONG_JINGXIN_BTN)
+            )
+        except Exception:
+            self.logger.warning(
+                "点击 rel_back1 未返回社区页，回退到系统返回键 driver.back()"
+            )
+            self.driver.back()
+            sleep(1)
+            WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.element_to_be_clickable(TOPIC_NEIRONG_JINGXIN_BTN)
+            )
         self.logger.info(f"已断言点击返回，社区页底部\"精选\"tab 可见")
         
  

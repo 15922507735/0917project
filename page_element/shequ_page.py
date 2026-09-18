@@ -90,10 +90,10 @@ TOPIC_ALL_CHAT_LIST = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/tv01",
 )
-# 聊天页面返回按钮
+# 聊天页面返回按钮（用父容器 rel_back1，tv_head_callBack2 只是装饰图标）
 TOPIC_ALL_CHAT_BACK_BTN = (
     AppiumBy.ID,
-    f"com.changan.oushangCos1:id/tv_head_callBack2",
+    f"{APP_PACKAGE}:id/rel_back1",
 )
 
 
