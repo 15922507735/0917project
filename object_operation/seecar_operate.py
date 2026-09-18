@@ -45,7 +45,7 @@ class SeeCarOperate:
 
     # ===================== 看车 Tab =====================
     def click_entry_btn(self) -> None:
-        """点击底部「看车」Tab。"""
+        """点击顶部「看车」Tab。"""
         try:
             WebDriverWait(self.driver, self.expect_wait_timeout).until(
                 EC.element_to_be_clickable(SEECAR_TAB)
@@ -102,3 +102,4 @@ class SeeCarOperate:
         # 等车系详情异步加载
         sleep(2)
         self.logger.info("已等待 2s 让 Q05 详情加载完成")
+

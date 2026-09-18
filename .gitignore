@@ -18,3 +18,22 @@ testcase_manage/chromedriver.exe
 .idea/
 *.swp
 .DS_Store
+
+# pytest / coverage 产物
+.pytest_cache/
+htmlcov/
+.coverage
+
+# 敏感环境变量
+.env
+.env.local
+
+# Python / 编辑器残留备份
+*.pyc.bak
+.orig
+venv.bak/
+
+# Allure 报告产物
+AllureReports/
+allure-results/
+allure-report/

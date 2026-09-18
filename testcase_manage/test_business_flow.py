@@ -43,6 +43,7 @@ from object_operation.seecar_operate import SeeCarOperate
 from object_operation.webview_operate import WebViewOperate
 from object_operation.shequ_operate import ShequOperate
 
+
 from page_element.login_page import (
     APP_PACKAGE,
     EXPECT_WAIT_TIMEOUT,
@@ -318,8 +319,39 @@ def test_click_topic_square(driver, logger, is_logged_in_session):
     login_op, first_page_op = _build_ops(driver, logger)
     _ensure_ready(login_op, first_page_op, logger)
 
-    shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    # click_topic_square 内部会切 WebView，需传入 WebViewOperate
+    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    shequ_op = ShequOperate(
+        driver, logger, webview_operate=webview_op,
+        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+    )
     logger.info("[用例8] 点击话题广场按钮")
     shequ_op.click_shequ_tab()
     shequ_op.click_topic_square()
     logger.info("[用例8] 点击话题广场按钮-完成")
+    shequ_op.click_topic_back_btn()
+    logger.info("[用例8] 点击话题列表返回按钮-完成")
+    shequ_op.click_topic_more_btn()
+    logger.info("[用例8] 点击查看更多按钮-完成")
+
+@pytest.mark.regression
+def test_click_topic_all_page_btn(driver, logger, is_logged_in_session):
+    # 方案A：不调 _ensure_ready —— 用例 8 最后一步已停在"所有圈子" WebView 页，
+    # 本用例直接在该页面操作，无需（也不能）回发现页，否则会误走前置流程。
+    # 注意：必须紧接用例 8 之后运行。
+    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    shequ_op = ShequOperate(
+        driver, logger, webview_operate=webview_op,
+        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+    )
+    logger.info("[用例9] 点击所有圈子列表页面地域标签按钮")
+    """用例 9：点击所有圈子列表页面地域标签按钮。"""
+    # 点击所有圈子列表页面地域标签按钮
+    shequ_op.click_topic_all_page_btn()
+    logger.info("[用例9] 点击所有圈子列表页面地域标签按钮-完成")
+    # 点击返回按钮
+    shequ_op.click_topic_all_back_btn()
+    logger.info("[用例9] 点击所有圈子列表页面返回按钮-完成")
+    # 点击返回，出现热门话题元素，则表示成功
+
+    driver.quit()

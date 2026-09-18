@@ -4,6 +4,8 @@ from __future__ import annotations
 from appium.webdriver.common.appiumby import AppiumBy
 
 from .login_page import APP_PACKAGE
+from selenium.webdriver.common.by import By
+
 
 # 社区 Tab 按钮（底部导航栏的"社区"）
 SHEQU_TAB = (
@@ -15,10 +17,55 @@ HOT_TOPIC = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/tvht",
 )
-# 话题广场按钮（社区页内的二级入口）
+# 话题广场按钮（社区页内的二级入口）—— 按文本定位（社区页上"话题广场"唯一且可点击）
 TOPIC_SQUARE_BTN = (
-    AppiumBy.ID,
-    f"{APP_PACKAGE}:id/tvht",
+    AppiumBy.XPATH,
+    "//android.widget.TextView[@text='话题广场']",
 )
 
-__all__ = ["SHEQU_TAB", "HOT_TOPIC", "TOPIC_SQUARE_BTN"]
+# 话题列表页面标题
+TOPIC_TITLE = (
+    By.XPATH,
+    "//*[@id='app']/div[1]/div[1]/div[2]/span",
+)
+# 话题列表返回按钮
+TOPIC_BACK_BTN = (
+    By.XPATH,
+    "//*[@id='app']/div[1]/div[1]/div[1]/div",
+)
+
+# 查看更多按钮（社区页"热门圈子"右侧，真实 id=tvmorequanzi）
+TOPIC_MORE_BTN = (
+    AppiumBy.ID,
+    "com.changan.oushangCos1:id/tvmorequanzi",
+)
+# 所有圈子页（circle-more WebView）元素 —— 定位来自真实 DOM dump
+# 顶部返回按钮：<div class="header-back">
+TOPIC_ALL_BACK_BTN = (
+    By.CSS_SELECTOR,
+    ".header-back",
+)
+# 地域标签：<div class="">地域</div>（选中后 class 变为 active）
+TOPIC_ALL_REGION_BTN = (
+    By.XPATH,
+    "//div[text()='地域']",
+)
+# 兴趣标签
+TOPIC_ALL_INTEREST_BTN = (
+    By.XPATH,
+    "//div[text()='兴趣']",
+)
+# 点地域后出现的省份圈子内容（广东/重庆任一出现即成功）
+TOPIC_ALL_REGION_CONTENT = (
+    By.XPATH,
+    "//*[contains(text(),'广东省') or contains(text(),'重庆')]",
+)
+
+
+
+
+    
+
+
+
+__all__ = ["SHEQU_TAB", "HOT_TOPIC", "TOPIC_SQUARE_BTN", "TOPIC_TITLE", "TOPIC_BACK_BTN"]
