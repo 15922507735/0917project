@@ -132,6 +132,7 @@ class OrderOperate:
 
         步骤：
         1) 在当前 WebView context 下点配置选择页顶部的返回按钮 (SELECT_CONFIG_BACK_BTN)；
+           点不到（如 DOM 结构变化）→ 兜底用系统返回键 driver.back()；
         2) 切回 NATIVE_APP context；
         3) 断言聚合页的"预约试驾"按钮 (AGGREGATE_RESERVE_BTN) 已可见 = 回到聚合页。
 
@@ -143,11 +144,14 @@ class OrderOperate:
             self.driver.find_element(*SELECT_CONFIG_BACK_BTN).click()
             self.logger.info("已点击配置选择页面返回按钮")
         except Exception as e:
-            self.logger.error(
+            self.logger.warning(
                 f"点击配置选择页面返回按钮失败: {e}, "
-                f"current_url={self.driver.current_url}"
+                f"current_url={self.driver.current_url}，回退到系统返回键"
             )
-            raise
+            # 兜底：H5 返回按钮定位不稳定时，用系统返回键
+            self.driver.back()
+            sleep(1)
+            self.logger.info("已用系统返回键返回聚合页")
 
         # 2) 切回 NATIVE_APP
         self.webview_operate.switch_to_native()
