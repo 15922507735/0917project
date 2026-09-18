@@ -1,4 +1,4 @@
-// Jenkinsfile - qiyuan_project (Declarative Pipeline)
+﻿// Jenkinsfile - qiyuan_project (Declarative Pipeline)
 // 框架：Appium-Python-client 6.x + Pytest + PO 分层
 //       (page_element / object_operation / testcase_manage)
 // 测试入口：python cli.py [smoke|regression]（由 jenkins_build_robust.bat 调用）
@@ -47,11 +47,42 @@ pipeline {
                              allowEmptyArchive: true,
                              fingerprint: false
         }
-        failure {
-            echo '构建失败，请查看上方日志定位问题。'
-        }
+        // 邮件通知：成功、失败、不稳定、aborted 都发送
+        // 依赖：Email-ext Plugin；Jenkins 系统配置里要配 SMTP + Admin Email
+        // 收件人：594608047@qq.com
         success {
-            echo '构建成功。'
+            mail to: '594608047@qq.com',
+                 subject: "✓ ${env.JOB_NAME} #${env.BUILD_NUMBER} 构建成功",
+                 body: """<p>构建 <b>${env.JOB_NAME} #${env.BUILD_NUMBER}</b> 已通过。</p>
+                 <ul>
+                   <li>状态: SUCCESS</li>
+                   <li>时长: ${currentBuild.durationString}</li>
+                   <li>Allure 报告: <a href="${env.BUILD_URL}allure">${env.BUILD_URL}allure</a></li>
+                   <li>控制台: <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a></li>
+                 </ul>
+                 <p>查看 Allure 报告中的用例通过/失败统计。</p>"""
+        }
+        failure {
+            mail to: '594608047@qq.com',
+                 subject: "✗ ${env.JOB_NAME} #${env.BUILD_NUMBER} 构建失败",
+                 body: """<p>构建 <b>${env.JOB_NAME} #${env.BUILD_NUMBER}</b> 失败，请尽快排查。</p>
+                 <ul>
+                   <li>状态: FAILURE</li>
+                   <li>时长: ${currentBuild.durationString}</li>
+                   <li>Allure 报告: <a href="${env.BUILD_URL}allure">${env.BUILD_URL}allure</a></li>
+                   <li>控制台: <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a></li>
+                 </ul>
+                 <p>点击 Allure 链接查看失败用例 traceback。</p>"""
+        }
+        unstable {
+            mail to: '594608047@qq.com',
+                 subject: "⚠ ${env.JOB_NAME} #${env.BUILD_NUMBER} 构建不稳定",
+                 body: """<p>构建 <b>${env.JOB_NAME} #${env.BUILD_NUMBER}</b> 不稳定（有失败用例）。</p>
+                 <ul>
+                   <li>状态: UNSTABLE</li>
+                   <li>Allure 报告: <a href="${env.BUILD_URL}allure">${env.BUILD_URL}allure</a></li>
+                 </ul>"""
         }
     }
 }
+
