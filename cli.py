@@ -49,8 +49,11 @@ def _build_pytest_args(marker: str | None) -> list[str]:
         完整的 pytest.main() 参数列表。
 
     额外逻辑：
-        - 读取环境变量 PYTEST_ADDOPTS（如 CI 注入的 --alluredir=./allure-results），
+        - 硬编码 --alluredir=./allure-results --clean-alluredir，
+          保证 allure-results 目录里一定有可生成报告的数据；
+        - 读取环境变量 PYTEST_ADDOPTS（如 CI 注入的额外 -k 等），
           shlex 拆分后追加到参数列表，等价于命令行透传。
+        - 自动去重（避免与硬编码参数冲突）。
     """
     # addopts 与 pytest.ini 中的配置保持一致；显式传入是为了让
     # 直接调用 pytest.main() 时也能拿到相同的输出格式。
@@ -59,14 +62,24 @@ def _build_pytest_args(marker: str | None) -> list[str]:
         # -m 后跟标记名即可筛选；不存在时 pytest 会报"未收集到用例"
         args.extend(["-m", marker])
 
-    # 透传 PYTEST_ADDOPTS（CI / 外部脚本追加 --alluredir / -k 等场景）
+    # 硬编码 allure 参数（避免依赖 PYTEST_ADDOPTS 透传）
+    args.extend(["--alluredir=./allure-results", "--clean-alluredir"])
+
+    # 透传 PYTEST_ADDOPTS（CI / 外部脚本追加额外 -k 等场景）；
+    # 跳过 --alluredir / --clean-alluredir（已硬编码，避免重复）。
     extra = os.environ.get("PYTEST_ADDOPTS", "").strip()
     if extra:
         try:
             import shlex
-            args.extend(shlex.split(extra))
+            tokens = shlex.split(extra)
         except Exception:
-            args.extend(extra.split())
+            tokens = extra.split()
+        for t in tokens:
+            if t.startswith("--alluredir") or t == "--clean-alluredir":
+                continue
+            if t in args:
+                continue
+            args.append(t)
     return args
 
 
