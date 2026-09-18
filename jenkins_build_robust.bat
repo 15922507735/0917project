@@ -69,7 +69,7 @@ REM 通过 cli.py 执行：默认 smoke 标签；
 REM 如需执行全部用例，把 "smoke" 改为 "" 或 "regression"。
 REM 同时透传 --alluredir 给 pytest（cli.py 已用 pytest.main()，通过 PYTEST_ADDOPTS 注入）。
 set PYTEST_ADDOPTS=--alluredir=.\allure-results --clean-alluredir
-python cli.py smoke
+python cli.py regression
 set PYTEST_RC=%ERRORLEVEL%
 
 REM pytest 退出码说明：
