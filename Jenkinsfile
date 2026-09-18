@@ -1,4 +1,7 @@
 // Jenkinsfile - qiyuan_project (Declarative Pipeline)
+// 框架：Appium-Python-client 6.x + Pytest + PO 分层
+//       (page_element / object_operation / testcase_manage)
+// 测试入口：python cli.py [smoke|regression]（由 jenkins_build_robust.bat 调用）
 // 使用方式：Jenkins 任务类型选 "Pipeline", "Pipeline script from SCM" 指向本仓库,
 //          "Script Path" 填 Jenkinsfile。
 // 旧自由风格任务（直接调用 jenkins_build_robust.bat）也可保留并继续使用本脚本。

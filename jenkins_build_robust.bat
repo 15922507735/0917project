@@ -4,9 +4,10 @@ chcp 65001 > nul
 set PYTHONIOENCODING=utf-8
 REM ==========================================================
 REM  Jenkins 构建脚本 - qiyuan_project (Windows)
-REM  位置：仓库根目录 (即 demo_project/)
+REM  位置：仓库根目录 (即 d:\git_project\demo_qiyuan_bac\)
 REM  调用方式：Jenkins "Execute Windows batch command" -> call jenkins_build_robust.bat
 REM  假设：Python / Appium server / Android 模拟器 已在节点预装
+REM  框架：Appium-Python-client 6.x + Pytest + PO 分层（page_element / object_operation / testcase_manage）
 REM ==========================================================
 setlocal enabledelayedexpansion
 
@@ -61,13 +62,14 @@ if errorlevel 1 (
 
 REM ---- 4. 运行测试 ----
 echo.
-echo [4/5] 运行 pytest + 生成 allure-results...
+echo [4/5] 运行测试（python cli.py 走 pytest 编程调用入口）...
 if not exist "allure-results" mkdir "allure-results"
 
-pytest scripts\test_login.py scripts\test_first_page.py ^
-    -v ^
-    --alluredir=.\allure-results ^
-    --clean-alluredir
+REM 通过 cli.py 执行：默认 smoke 标签；
+REM 如需执行全部用例，把 "smoke" 改为 "" 或 "regression"。
+REM 同时透传 --alluredir 给 pytest（cli.py 已用 pytest.main()，通过 PYTEST_ADDOPTS 注入）。
+set PYTEST_ADDOPTS=--alluredir=.\allure-results --clean-alluredir
+python cli.py smoke
 set PYTEST_RC=%ERRORLEVEL%
 
 REM pytest 退出码说明：
@@ -76,7 +78,7 @@ REM   1  = 有用例失败
 REM   2  = 测试执行被中断
 REM   3  = 内部错误
 REM   4  = pytest 命令错误
-REM   5  = 未收集到用例（脚本还在骨架阶段，暂时接受）
+REM   5  = 未收集到用例
 echo.
 echo pytest 退出码: %PYTEST_RC%
 REM 注意：CMD 的多行 if 必须用 () 把整段括起来，否则换行会被当成新命令，
@@ -86,7 +88,7 @@ if not %PYTEST_RC%==0 (
         echo [ERROR] pytest 执行失败，退出码 %PYTEST_RC%
         exit /b %PYTEST_RC%
     ) else (
-        echo [WARN] 未收集到 pytest 用例（退出码 5），脚本仍处于骨架阶段，继续生成 allure 报告。
+        echo [WARN] 未收集到 pytest 用例（退出码 5）
     )
 )
 

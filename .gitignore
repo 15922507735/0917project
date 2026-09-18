@@ -10,6 +10,9 @@ __pycache__/
 debug_*.png
 *.log
 
+# WebDriver 二进制（手动安装，体积大）
+testcase_manage/chromedriver.exe
+
 # IDE
 .vscode/
 .idea/
