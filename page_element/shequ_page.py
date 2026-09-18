@@ -1,10 +1,10 @@
 """社区页元素层。"""
 from __future__ import annotations
-
 from appium.webdriver.common.appiumby import AppiumBy
-
 from .login_page import APP_PACKAGE
 from selenium.webdriver.common.by import By
+import pytest
+
 
 
 # 社区 Tab 按钮（底部导航栏的"社区"）
@@ -60,12 +60,53 @@ TOPIC_ALL_REGION_CONTENT = (
     By.XPATH,
     "//*[contains(text(),'广东省') or contains(text(),'重庆')]",
 )
+# 社区内容标签-最新
+TOPIC_ALL_PAGE_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='最新']",
+)
+# 社区内容标签-精选（用于断言"回到社区页"）
+TOPIC_NEIRONG_JINGXIN_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='精选']",
+)
+# 社区内容标签-视频
+TOPIC_ALL_VIDEO_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='视频']",
+)
+# 社区内容标签-关注
+TOPIC_ALL_FOLLOW_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='关注']",
+)
+# 社区内容标签-聊天
+TOPIC_ALL_CHAT_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tv_imChatList",
+)  
+# 聊天列表
+TOPIC_ALL_CHAT_LIST = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tv01",
+)
+# 聊天页面返回按钮
+TOPIC_ALL_CHAT_BACK_BTN = (
+    AppiumBy.ID,
+    f"com.changan.oushangCos1:id/tv_head_callBack2",
+)
 
 
-
-
-    
-
-
-
-__all__ = ["SHEQU_TAB", "HOT_TOPIC", "TOPIC_SQUARE_BTN", "TOPIC_TITLE", "TOPIC_BACK_BTN"]
+__all__ = [
+    "SHEQU_TAB", 
+    "HOT_TOPIC", 
+    "TOPIC_SQUARE_BTN", 
+    "TOPIC_TITLE", 
+    "TOPIC_BACK_BTN", 
+    "TOPIC_ALL_PAGE_BTN", 
+    "TOPIC_ALL_VIDEO_BTN", 
+    "TOPIC_ALL_FOLLOW_BTN", 
+    "TOPIC_ALL_CHAT_BTN",
+    "TOPIC_ALL_CHAT_LIST",
+    "TOPIC_ALL_CHAT_BACK_BTN",
+    ]

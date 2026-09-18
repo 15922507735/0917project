@@ -19,6 +19,12 @@ from page_element.shequ_page import (
     TOPIC_ALL_BACK_BTN,
     TOPIC_ALL_REGION_BTN,
     TOPIC_ALL_REGION_CONTENT,
+    TOPIC_ALL_PAGE_BTN,
+    TOPIC_ALL_VIDEO_BTN,
+    TOPIC_ALL_FOLLOW_BTN,
+    TOPIC_ALL_CHAT_BTN,
+    TOPIC_ALL_CHAT_LIST,
+    TOPIC_ALL_CHAT_BACK_BTN,
 )
 
 
@@ -145,6 +151,53 @@ class ShequOperate:
         )
         self.logger.info("已断言点击返回，出现热门话题元素，则表示成功")
         
-
-
+        
+    def click_shequ_neirong_new(self) -> None:
+        # 点击最新标签
+        self.driver.find_element(*TOPIC_ALL_PAGE_BTN).click()
+        self.logger.info(f"已点击最新标签按钮")
+        # 等待最新标签选中（class=active）
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(TOPIC_ALL_PAGE_BTN)
+        )
+        self.logger.info(f"已断言最新标签选中")
+    def click_topic_all_video_btn(self) -> None:
+        # 点击视频标签
+        self.driver.find_element(*TOPIC_ALL_VIDEO_BTN).click()
+        self.logger.info(f"已点击视频标签按钮")
+        # 等待视频标签选中（class=active）
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(TOPIC_ALL_VIDEO_BTN)
+        )
+        self.logger.info(f"已断言视频标签选中")
+    def click_topic_all_follow_btn(self) -> None:
+        # 点击关注标签
+        self.driver.find_element(*TOPIC_ALL_FOLLOW_BTN).click()
+        self.logger.info(f"已点击关注标签按钮")
+        # 等待关注标签选中（class=active）
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(TOPIC_ALL_FOLLOW_BTN)
+        )
+        self.logger.info(f"已断言关注标签选中")
+    def click_topic_all_chat_btn(self) -> None:
+        # 点击聊天标签
+        self.driver.find_element(*TOPIC_ALL_CHAT_BTN).click()
+        self.logger.info(f"已点击聊天标签按钮")
+        # 等待聊天页面加载完成，出现聊天列表元素
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(TOPIC_ALL_CHAT_LIST)
+        )
+        self.logger.info(f"已断言聊天页面加载完成，出现聊天列表元素")
+    def click_topic_all_chat_back_btn(self) -> None:
+        # 点击聊天页面返回按钮
+        self.driver.find_element(*TOPIC_ALL_CHAT_BACK_BTN).click()
+        self.logger.info(f"已点击聊天页面返回按钮")
+        # 断言返回到社区页：底部"精选"tab 可见（社区页加载完成的标志）
+        # 注：原断言 HOT_TOPIC 在"社区内容标签"视图下可能被覆盖，故用"精选"
+        from page_element.shequ_page import TOPIC_NEIRONG_JINGXIN_BTN
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(TOPIC_NEIRONG_JINGXIN_BTN)
+        )
+        self.logger.info(f"已断言点击返回，社区页底部\"精选\"tab 可见")
+        
  

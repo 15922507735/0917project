@@ -4,17 +4,14 @@
 需要用浏览器侧选择器：By.CSS_SELECTOR / By.XPATH（DOM）/ By.ID（HTML id 属性）等。
 """
 from __future__ import annotations
-
 from typing import Any
-
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
 from page_element.login_page import APP_PACKAGE, EXPECT_WAIT_TIMEOUT
 from page_element.order_page import SELECT_CONFIG_BTN
-
 
 class WebViewOperate:
     """WebView / H5 操作封装。"""

@@ -1,14 +1,12 @@
 """看车 / Q05 车型页操作层。"""
 from __future__ import annotations
-
 from time import sleep
 from typing import Any
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
+import pytest
 from page_element.login_page import EXPECT_WAIT_TIMEOUT
 from page_element.seecar_page import SEECAR_TAB
 

@@ -25,6 +25,9 @@
 - test_click_seecar_btn：回归，点击看车 Tab + Q05 车型入口（**登录/未登录都跑**）
 - test_click_shequ_tab：回归，点击社区 Tab + 断言热门话题（**登录/未登录都跑**）
 - test_click_topic_square：回归，切社区页 + 点击话题广场（**登录/未登录都跑**）
+- test_click_topic_all_page_btn：回归，切社区页 + 点击最新标签（**登录/未登录都跑**）
+
+
 
 运行方式：
     python cli.py            # 全部用例
@@ -33,16 +36,14 @@
     python cli.py business   # 仅业务用例
 """
 from __future__ import annotations
-
 import pytest
-
 from object_operation.first_page_operate import FirstPageOperate
 from object_operation.login_operate import LoginOperate
 from object_operation.order_operate import OrderOperate
 from object_operation.seecar_operate import SeeCarOperate
 from object_operation.webview_operate import WebViewOperate
 from object_operation.shequ_operate import ShequOperate
-
+from object_operation.huodong_operate import HuodongOperate
 
 from page_element.login_page import (
     APP_PACKAGE,
@@ -353,5 +354,54 @@ def test_click_topic_all_page_btn(driver, logger, is_logged_in_session):
     shequ_op.click_topic_all_back_btn()
     logger.info("[用例9] 点击所有圈子列表页面返回按钮-完成")
     # 点击返回，出现热门话题元素，则表示成功
+
+@pytest.mark.regression
+def test_click_topic_neirong(driver, logger, is_logged_in_session):
+    """用例 10：点击社区内容标签-最新、视频、关注、聊天。
+
+    本用例不依赖用例 9 状态，自带导航：
+      _ensure_ready → 切社区 Tab → 点最新/视频/关注/聊天 → 返回。
+    4 个 Tab 元素都是原生（id/tv_tab + 文本），不需要 WebView。
+    """
+    login_op, first_page_op = _build_ops(driver, logger)
+    _ensure_ready(login_op, first_page_op, logger)
+
+    shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+
+    logger.info("[用例10] 点击社区内容标签-最新、视频、关注、聊天")
+    # 先切到社区页（社区 Tab 在发现页底部）
+    shequ_op.click_shequ_tab()
+    # 点击社区内容标签-最新
+    shequ_op.click_shequ_neirong_new()
+    logger.info("[用例10] 点击社区内容标签-最新-完成")
+    # 点击视频标签
+    shequ_op.click_topic_all_video_btn()
+    logger.info("[用例10] 点击视频标签-完成")
+    # 点击关注标签
+    shequ_op.click_topic_all_follow_btn()
+    logger.info("[用例10] 点击关注标签-完成")
+    # 点击聊天标签
+    shequ_op.click_topic_all_chat_btn()
+    logger.info("[用例10] 点击聊天标签-完成")
+    # 点击返回按钮
+    shequ_op.click_topic_all_chat_back_btn()
+    logger.info("[用例10] 点击聊天列表返回按钮-完成")
+
+@pytest.mark.regression
+def test_click_huodong_status(driver, logger, is_logged_in_session):
+    login_op, first_page_op = _build_ops(driver, logger)
+    _ensure_ready(login_op, first_page_op, logger)
+
+    huodong_op = HuodongOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    """用例 11：点击活动状态按钮。"""
+    # 点击活动 Tab 按钮
+    huodong_op.click_huodong_tab()
+    logger.info("[用例11] 点击活动 Tab 按钮-完成")
+    # 点击活动状态按钮
+    huodong_op.select_huodong_status()
+    logger.info("[用例11] 点击活动状态按钮-完成")
+    # 点击确定按钮
+    huodong_op.click_huodong_confirm_btn()
+    logger.info("[用例11] 点击确定按钮-完成")
 
     driver.quit()

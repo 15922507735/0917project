@@ -8,6 +8,7 @@ __pycache__/
 
 # 调试产物
 debug_*.png
+debug_*.html
 *.log
 
 # WebDriver 二进制（手动安装，体积大）
