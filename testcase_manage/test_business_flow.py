@@ -36,6 +36,7 @@
     python cli.py business   # 仅业务用例
 """
 from __future__ import annotations
+import os
 import time
 
 import pytest
@@ -480,7 +481,12 @@ def _fatie_native_reset(driver, logger) -> None:
     else:
         logger.warning(f"[fatie_reset] 连续按了 {max_back} 次返回，仍未回到 QYMainActivity")
 # ===================== 用例 13 =====================
-@pytest.mark.skip(reason="用例13会真实发布文章，污染测试数据；用例14已替代数据驱动验证场景")
+# 默认跳过（真实发布会污染测试数据）；设 RUN_PUBLISH=1 启用：RUN_PUBLISH=1 pytest -k test_click_fatie
+@pytest.mark.skipif(
+    os.getenv("RUN_PUBLISH") != "1",
+    reason="用例13会真实发布文章，污染测试数据；用例14已替代数据驱动验证场景。"
+           "设环境变量 RUN_PUBLISH=1 启用。",
+)
 @pytest.mark.regression
 def test_click_fatie(driver, logger, is_logged_in_session):
     """用例 13：发帖完整流程（含上传封面）。
@@ -579,7 +585,7 @@ def test_click_fatie(driver, logger, is_logged_in_session):
 # ===================== 用例 14 =====================
 @pytest.fixture
 def fatie_op(driver, logger):
-    """构造发帖操作实例（共享 webview 切换能力）。"""
+    """用例14构造发帖操作实例（共享 webview 切换能力）。"""
     webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
     return FatieOperate(
         driver, logger, webview_operate=webview_op,
@@ -588,7 +594,7 @@ def fatie_op(driver, logger):
 
 
 def _navigate_to_fatie_editor(driver, logger, fatie_op):
-    """把 APP 导航到发帖编辑页（WebView）。"""
+    """用例14：把 APP 导航到发帖编辑页（WebView）。"""
     login_op, first_page_op = _build_ops(driver, logger)
     _ensure_ready(login_op, first_page_op, logger)
     try:
@@ -610,7 +616,7 @@ def test_fatie_input_draft(
     driver, logger, is_logged_in_session, fatie_op,
     case_id, title, content_text, expected_keyword,
 ):
-    """数据驱动：发帖标题 + 富文本内容输入。"""
+    """用例14：数据驱动：发帖标题 + 富文本内容输入。"""
     _navigate_to_fatie_editor(driver, logger, fatie_op)
     try:
         fatie_op.click_title_input(title)
@@ -619,3 +625,4 @@ def test_fatie_input_draft(
         logger.info(f"[{case_id}] 输入内容 + 断言关键字 '{expected_keyword}' 通过")
     finally:
         _fatie_native_reset(driver, logger)
+    
