@@ -480,6 +480,7 @@ def _fatie_native_reset(driver, logger) -> None:
     else:
         logger.warning(f"[fatie_reset] 连续按了 {max_back} 次返回，仍未回到 QYMainActivity")
 # ===================== 用例 13 =====================
+@pytest.mark.skip(reason="用例13会真实发布文章，污染测试数据；用例14已替代数据驱动验证场景")
 @pytest.mark.regression
 def test_click_fatie(driver, logger, is_logged_in_session):
     """用例 13：发帖完整流程（含上传封面）。
@@ -574,9 +575,6 @@ def test_click_fatie(driver, logger, is_logged_in_session):
     # 12. 点击发布按钮
     fatie_op.click_publish_button()
     logger.info("[用例13] 点击发布按钮-完成")
-
-    driver.quit()
-
 
 # ===================== 用例 14 =====================
 @pytest.fixture
