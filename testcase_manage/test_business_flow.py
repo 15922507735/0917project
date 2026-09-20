@@ -55,6 +55,7 @@ from page_element.login_page import (
     EXPECT_WAIT_TIMEOUT,
 )
 from page_element.fatie_page import PUBLISH_BUTTON, PUBLISH_SUCCESS_TEXT
+from testcase_manage.data.fatie_data import FATIE_DRAFT_DATA
 
 
 # ===================== 共享：构造 operate 实例 =====================
@@ -575,3 +576,48 @@ def test_click_fatie(driver, logger, is_logged_in_session):
     logger.info("[用例13] 点击发布按钮-完成")
 
     driver.quit()
+
+
+# ===================== 用例 14 =====================
+@pytest.fixture
+def fatie_op(driver, logger):
+    """构造发帖操作实例（共享 webview 切换能力）。"""
+    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    return FatieOperate(
+        driver, logger, webview_operate=webview_op,
+        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+    )
+
+
+def _navigate_to_fatie_editor(driver, logger, fatie_op):
+    """把 APP 导航到发帖编辑页（WebView）。"""
+    login_op, first_page_op = _build_ops(driver, logger)
+    _ensure_ready(login_op, first_page_op, logger)
+    try:
+        driver.switch_to.context("NATIVE_APP")
+    except Exception:
+        pass
+    fatie_op.click_post_button()
+    fatie_op.click_post_article_button()
+    fatie_op.switch_to_post_article_webview()
+
+
+@pytest.mark.parametrize(
+    "case_id, title, content_text, expected_keyword",
+    FATIE_DRAFT_DATA,
+    ids=[d[0] for d in FATIE_DRAFT_DATA],
+)
+@pytest.mark.regression
+def test_fatie_input_draft(
+    driver, logger, is_logged_in_session, fatie_op,
+    case_id, title, content_text, expected_keyword,
+):
+    """数据驱动：发帖标题 + 富文本内容输入。"""
+    _navigate_to_fatie_editor(driver, logger, fatie_op)
+    try:
+        fatie_op.click_title_input(title)
+        logger.info(f"[{case_id}] 输入标题完成: {title}")
+        fatie_op.click_content_input(content_text, expected_keyword)
+        logger.info(f"[{case_id}] 输入内容 + 断言关键字 '{expected_keyword}' 通过")
+    finally:
+        _fatie_native_reset(driver, logger)

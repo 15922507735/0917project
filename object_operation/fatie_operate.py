@@ -175,17 +175,32 @@ class FatieOperate:
         self.logger.info("断言发文章页面加载完成，url 含 circle/publish")
 
     # 点击标题输入框，输入标题
-    def click_title_input(self):
+    def click_title_input(self, title: str = "此刻我想吟诗一首"):
+        """点击标题输入框并输入文本。
+
+        Args:
+            title: 要填入的标题内容，默认 "此刻我想吟诗一首"。
+        """
         self.driver.find_element(*TITLE_INPUT).click()
         self.logger.info("点击标题输入框")
-        self.driver.find_element(*TITLE_INPUT).send_keys("此刻我想吟诗一首")
-        self.logger.info("输入标题: 此刻我想吟诗一首")
+        self.driver.find_element(*TITLE_INPUT).send_keys(title)
+        self.logger.info(f"输入标题: {title}")
+
     # 点击内容输入框，输入内容
-    def click_content_input(self):
-        content_text = (
+    def click_content_input(
+        self,
+        content_text: str = (
             "远看山有色，近看山无色。近看山有影，远看山无影。"
             "春去春来，山色不改。秋去冬来，白雪皑皑。一去二三里，天色不早矣"
-        )
+        ),
+        expected_keyword: str = "远看山有色",
+    ):
+        """点击内容输入框，用 JS 注入方式写入内容（适用于 contenteditable 富文本）。
+
+        Args:
+            content_text: 要写入的内容文本。
+            expected_keyword: 断言必须包含的关键字，默认 "远看山有色"。
+        """
         # 先 click 触发 needsclick（部分富文本组件需要真实的鼠标事件）
         content_el = self.driver.find_element(*CONTENT_INPUT)
         content_el.click()
@@ -207,13 +222,13 @@ class FatieOperate:
         )
         self.logger.info("输入内容（JS 注入方式）")
 
-        # 断言页面内容文本包含有"远看山有色"，则输入成功
+        # 断言页面内容文本包含期望关键字，则输入成功
         actual_text = self.driver.execute_script(
             "return arguments[0].innerText || arguments[0].textContent",
             content_el,
         )
-        assert "远看山有色" in actual_text, (
-            f"内容输入失败，期望包含 '远看山有色'，实际: {actual_text}"
+        assert expected_keyword in actual_text, (
+            f"内容输入失败，期望包含 '{expected_keyword}'，实际: {actual_text}"
         )
         self.logger.info("内容输入成功")
 
