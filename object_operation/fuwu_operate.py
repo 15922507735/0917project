@@ -111,10 +111,13 @@ class FuwuOperate:
     # 点击门店详情返回按钮
     def click_store_back_btn(self):
         """点击门店详情返回按钮。
-        
+
         联合定位策略：先按 ID 找，找不到再按 XPath 找，确保点中"返回按钮"本身。
+        断言返回成功（出现门店文本元素）。
         """
         from selenium.common.exceptions import NoSuchElementException
+        from appium.webdriver.common.appiumby import AppiumBy
+
         try:
             self.driver.find_element(*MENDIAN_BACK_BTN_ID).click()
             self.logger.info("[联合定位] 按 ID 命中并点击门店返回按钮")
@@ -122,8 +125,13 @@ class FuwuOperate:
             self.driver.find_element(*MENDIAN_BACK_BTN_XPATH).click()
             self.logger.info("[联合定位] 按 XPath 命中并点击门店返回按钮")
         self.logger.info("门店详情返回按钮点击成功")
-        # 给页面一点时间返回（不强断言具体元素，避免页面改版后挂掉）
-        sleep(1)
+        # 断言返回成功：出现"门店"文本（不限定 id，兼容 native / H5）
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(
+                (AppiumBy.XPATH, "//*[contains(@text, '门店')]")
+            )
+        )
+        self.logger.info("门店详情页面返回成功，出现门店文本")
 
     # 页面向上滑动
     def swipe_up(self):
