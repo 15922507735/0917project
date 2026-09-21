@@ -648,3 +648,21 @@ def test_fuwu_page_op(driver, logger, is_logged_in_session):
     logger.info("[用例15] 点击门店详情位置按钮-完成")
     fuwu_op.click_store_address_btn_submit()
     logger.info("[用例15] 点击位置弹窗确定按钮-完成")
+    fuwu_op.click_store_search_btn()
+    logger.info("[用例15] 点击门店收起展开按钮-完成")
+    fuwu_op.click_store_deliver_btn()
+    logger.info("[用例15] 点击交付中心按钮-完成")
+    fuwu_op.click_store_maint_btn()
+    logger.info("[用例15] 点击维护中心按钮-完成")
+    fuwu_op.click_store_back_btn()
+    logger.info("[用例15] 点击门店详情返回按钮-完成")
+    fuwu_op.swipe_up()
+    logger.info("[用例15] 滑动返回按钮-完成")
+    fuwu_op.click_store_charge_btn()
+    logger.info("[用例15] 点击家充服务按钮-完成")
+    fuwu_op.click_store_charge_back_btn()
+    logger.info("[用例15] 点击家充装返回按钮-完成")
+
+
+
+    

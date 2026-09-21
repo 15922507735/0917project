@@ -52,7 +52,7 @@ STORE_MAINT_BTN = (
     f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='维保中心']",
 )
 # 门店详情返回按钮
-STORE_BACK_BTN = (
+MENDIAN_BACK_BTN = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/bar_img_back",
 )
@@ -86,8 +86,8 @@ STORE_DISTANCE_BTN = (
     AppiumBy.XPATH,
     f"//android.view.View[@text='距离最近']",
 )
-# 经销商页面返回按钮（H5 页面专用）
-STORE_DEALER_BACK_BTN = (
+# 经销商页面返回按钮
+STORE_BACK_BTN = (
     AppiumBy.XPATH,
     f"//android.view.View[@resource-id='{APP_PACKAGE}:id/headerBox']/android.view.View[1]/android.view.View[1]",
 )

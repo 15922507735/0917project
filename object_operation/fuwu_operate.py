@@ -23,9 +23,12 @@ from page_element.fuwu_page import (
     STORE_MAINT_BTN,
     STORE_RESERVE_BTN,
     STORE_FAVORITE_BTN,
+    STORE_BACK_BTN,
+    STORE_CHARGE_BTN,
+    MENDIAN_BACK_BTN,
+    STORE_CHARGE_BTN_HUAWEI,
+    STORE_CHARGE_TEXT,
     )
-
-
 
 class FuwuOperate:
     """服务模块操作。"""
@@ -84,4 +87,64 @@ class FuwuOperate:
         )
         self.logger.info("位置弹窗关闭成功")
 
+    # 点击收起展开按钮
+    def click_store_search_btn(self):
+        """点击收起展开按钮。"""
+        self.driver.find_element(*STORE_SEARCH_BTN).click()
+        self.logger.info("收起展开按钮点击成功")
+
+    # 点击交付中心按钮
+    def click_store_deliver_btn(self):
+        """点击交付中心按钮。"""
+        self.driver.find_element(*STORE_DELIVER_BTN).click()
+        self.logger.info("交付中心按钮点击成功")
     
+    # 点击维保中心按钮
+    def click_store_maint_btn(self):
+        """点击维保中心按钮。"""
+        self.driver.find_element(*STORE_MAINT_BTN).click()
+        self.logger.info("维保中心按钮点击成功")
+    
+    # 点击门店详情返回按钮
+    def click_store_back_btn(self):
+        """点击门店详情返回按钮。"""
+        self.driver.find_element(*STORE_BACK_BTN).click()
+        self.logger.info("门店详情返回按钮点击成功")
+        # 等待门店页面加载完成，出现“门店”文本元素
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_TEXT)
+        )
+        self.logger.info("门店页面加载成功，出现“门店”文本")
+
+    # 页面向上滑动
+    def swipe_up(self):
+        """页面向上滑动。"""
+        self.driver.swipe(420, 1336, 420, 390, 1000)
+        self.logger.info("页面向上滑动成功")
+        # 等待页面加载完成，出现“家充桩”元素
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_CHARGE_BTN)
+        )
+        self.logger.info("页面加载成功，出现“家充桩”按钮")
+
+    # 点击家充服务按钮
+    def click_store_charge_btn(self):
+        """点击家充服务按钮。"""
+        self.driver.find_element(*STORE_CHARGE_BTN).click()
+        self.logger.info("家充服务按钮点击成功")
+        # 等待页面加载完成，出现“家充桩”元素
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_CHARGE_PILL_TEXT)
+        )
+        self.logger.info("页面加载成功，出现“家充桩”文本")
+    
+    # 点击家充装返回按钮
+    def click_store_charge_back_btn(self):
+        """点击家充装返回按钮。"""
+        self.driver.find_element(*STORE_CHARGE_BACK_BTN).click()
+        self.logger.info("家充装返回按钮点击成功")
+        # 等待页面加载完成，出现“家充服务”文本元素
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_CHARGE_TEXT)
+        )
+        self.logger.info("页面加载成功，出现“家充服务”文本")
