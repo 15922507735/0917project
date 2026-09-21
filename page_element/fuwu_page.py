@@ -36,7 +36,7 @@ STORE_SEARCH_INPUT = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/et_search",
 )
-# 收齐展开按钮
+# 收起展开按钮
 STORE_SEARCH_BTN = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/iv_menu",
@@ -50,6 +50,11 @@ STORE_DELIVER_BTN = (
 STORE_MAINT_BTN = (
     AppiumBy.XPATH,
     f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='维保中心']",
+)
+# 门店详情返回按钮
+STORE_BACK_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/bar_img_back",
 )
 # 预约试驾按钮
 STORE_RESERVE_BTN = (
@@ -106,4 +111,18 @@ STORE_CHARGE_BTN_HUAWEI = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/l1img3",
 )
-
+# 家充服务文本元素
+STORE_CHARGE_TEXT = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@text='家充服务']",
+)
+# 家充桩文本元素
+STORE_CHARGE_PILL_TEXT = (
+    AppiumBy.XPATH,
+    f"//android.view.View[@text='家充桩'][2]",
+)
+# 家充装返回按钮
+STORE_CHARGE_BACK_BTN = (
+    AppiumBy.XPATH,
+    f"//android.view.View[@resource-id='app']/android.view.View[2]/android.view.View/android.view.View[1]/android.view.View[1]",
+)
