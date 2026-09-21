@@ -51,10 +51,14 @@ STORE_MAINT_BTN = (
     AppiumBy.XPATH,
     f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='维保中心']",
 )
-# 门店详情返回按钮
-MENDIAN_BACK_BTN = (
+# 门店详情返回按钮（联合定位：先 ID 再 XPath，代码里 fallback）
+MENDIAN_BACK_BTN_ID = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/bar_img_back",
+)
+MENDIAN_BACK_BTN_XPATH = (
+    AppiumBy.XPATH,
+    f"//android.widget.ImageView[@resource-id='{APP_PACKAGE}:id/bar_img_back']",
 )
 # 预约试驾按钮
 STORE_RESERVE_BTN = (

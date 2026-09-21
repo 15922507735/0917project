@@ -25,9 +25,13 @@ from page_element.fuwu_page import (
     STORE_FAVORITE_BTN,
     STORE_BACK_BTN,
     STORE_CHARGE_BTN,
-    MENDIAN_BACK_BTN,
+    MENDIAN_BACK_BTN_ID,
+    MENDIAN_BACK_BTN_XPATH,
     STORE_CHARGE_BTN_HUAWEI,
     STORE_CHARGE_TEXT,
+    STORE_CHARGE_PILL_TEXT,
+    STORE_CHARGE_BACK_BTN,
+    STORE_FINANCE_TEXT,
     )
 
 class FuwuOperate:
@@ -107,14 +111,23 @@ class FuwuOperate:
     
     # 点击门店详情返回按钮
     def click_store_back_btn(self):
-        """点击门店详情返回按钮。"""
-        self.driver.find_element(*STORE_BACK_BTN).click()
+        """点击门店详情返回按钮。
+        
+        联合定位策略：先按 ID 找，找不到再按 XPath 找，确保点中"返回按钮"本身。
+        """
+        from selenium.common.exceptions import NoSuchElementException
+        try:
+            self.driver.find_element(*MENDIAN_BACK_BTN_ID).click()
+            self.logger.info("[联合定位] 按 ID 命中并点击门店返回按钮")
+        except NoSuchElementException:
+            self.driver.find_element(*MENDIAN_BACK_BTN_XPATH).click()
+            self.logger.info("[联合定位] 按 XPath 命中并点击门店返回按钮")
         self.logger.info("门店详情返回按钮点击成功")
-        # 等待门店页面加载完成，出现“门店”文本元素
+        # 等待服务页面加载完成，出现金融试算文本元素
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(STORE_TEXT)
+            EC.presence_of_element_located(STORE_FINANCE_TEXT)
         )
-        self.logger.info("门店页面加载成功，出现“门店”文本")
+        self.logger.info("服务页面加载成功，出现“金融试算”文本")
 
     # 页面向上滑动
     def swipe_up(self):
@@ -148,3 +161,4 @@ class FuwuOperate:
             EC.presence_of_element_located(STORE_CHARGE_TEXT)
         )
         self.logger.info("页面加载成功，出现“家充服务”文本")
+        
