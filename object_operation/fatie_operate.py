@@ -310,7 +310,11 @@ class FatieOperate:
 
     # 点击发布按钮
     def click_publish_button(self):
-        self.driver.find_element(*PUBLISH_BUTTON).click()
+        publish_btn = self.driver.find_element(*PUBLISH_BUTTON)
+        is_enabled = publish_btn.is_enabled()
+        self.logger.info(f"发布按钮 enabled={is_enabled}")
+        assert is_enabled, "发布按钮被禁用，表单可能不完整（标题/内容/封面缺失）"
+        publish_btn.click()
         self.logger.info("点击发布按钮")
 
         # 给 App 一点时间：点击 → Vue 触发 → 接口 → H5 销毁 → 切回 native
@@ -319,7 +323,53 @@ class FatieOperate:
         # 切回 native（App 自己会切；这里兜底再切一次，确保 native 上下文）
         self.webview_operate.switch_to_native()
         self.logger.info("已切换回native-app")
-        self.logger.info("✅ 发布完成")
+        self.logger.info("✅ 发布完成（按钮可点 + 已切回 native）")
+
+    # 发帖流程结束后回到"发现"首页：供下一个用例走底部 Tab 流程
+    def back_to_discover_page(self):
+        """发文章流程结束后，把 APP 拉回"发现 Tab"首页。
+
+        流程：
+        1. 已经在 NATIVE_APP context（由 click_publish_button 兜底）
+        2. 多次按返回键，退出 H5 / 相册 / 弹窗，回到 QYMainActivity
+        3. 按 text='发现' 找底部 Tab，整块点击切到发现页
+        """
+        from appium.webdriver.common.appiumby import AppiumBy
+
+        # 1. 已经在 NATIVE_APP context，跳过；不在就强切
+        try:
+            if "NATIVE_APP" in self.driver.contexts:
+                self.driver.switch_to.context("NATIVE_APP")
+        except Exception as e:
+            self.logger.warning(f"[back_to_discover] 切 NATIVE 失败: {e.__class__.__name__}: {e}")
+            return
+
+        # 2. 多次按返回键回到 QYMainActivity（兜底 5 次）
+        max_back = 5
+        for i in range(max_back):
+            try:
+                activity = self.driver.current_activity or ""
+            except Exception:
+                break
+            if "QYMainActivity" in activity:
+                self.logger.info(f"[back_to_discover] 已回到 QYMainActivity（用 {i} 次返回）")
+                break
+            self.driver.back()
+            sleep(0.5)
+
+        # 3. 按 text='发现' 找底部 Tab，整块点击
+        try:
+            discover_tab = (AppiumBy.XPATH, "//android.widget.TextView[@text='发现']/..")
+            self.wait.until(
+                EC.element_to_be_clickable(discover_tab),
+                "5s 内未找到发现 Tab",
+            ).click()
+            self.logger.info("[back_to_discover] 已切到发现 Tab")
+            sleep(0.5)
+        except Exception as e:
+            self.logger.warning(
+                f"[back_to_discover] 切发现 Tab 失败: {e.__class__.__name__}: {e}"
+            )
 
 
     

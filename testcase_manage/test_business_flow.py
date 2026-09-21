@@ -50,6 +50,7 @@ from object_operation.webview_operate import WebViewOperate
 from object_operation.shequ_operate import ShequOperate
 from object_operation.huodong_operate import HuodongOperate
 from object_operation.fatie_operate import FatieOperate
+from object_operation.fuwu_operate import FuwuOperate
 
 from page_element.login_page import (
     APP_PACKAGE,
@@ -625,4 +626,25 @@ def test_fatie_input_draft(
         logger.info(f"[{case_id}] 输入内容 + 断言关键字 '{expected_keyword}' 通过")
     finally:
         _fatie_native_reset(driver, logger)
+        # 切到发现 Tab，避免用例 15 找不到"服务"Tab
+        fatie_op.back_to_discover_page()
     
+    
+    
+@pytest.mark.regression
+def test_fuwu_page_op(driver, logger, is_logged_in_session):
+    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    login_op, first_page_op = _build_ops(driver, logger)
+    fuwu_op = FuwuOperate(
+        driver, logger, webview_operate=webview_op,
+        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+    )
+    """用例15：服务模块页面操作。"""
+    fuwu_op.click_fuwu_tab()
+    logger.info("[用例15] 点击服务按钮-完成")
+    fuwu_op.click_store_btn()
+    logger.info("[用例15] 点击门店按钮-完成")
+    fuwu_op.click_store_address_btn()
+    logger.info("[用例15] 点击门店详情位置按钮-完成")
+    fuwu_op.click_store_address_btn_submit()
+    logger.info("[用例15] 点击位置弹窗确定按钮-完成")
