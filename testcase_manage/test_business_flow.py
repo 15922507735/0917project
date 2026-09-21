@@ -633,13 +633,16 @@ def test_fatie_input_draft(
     
 @pytest.mark.regression
 def test_fuwu_page_op(driver, logger, is_logged_in_session):
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    """用例15：服务模块页面操作。"""
+    # 先确保 APP 处于发现页（处理冷启动 / 上个用例污染）
     login_op, first_page_op = _build_ops(driver, logger)
+    _ensure_ready(login_op, first_page_op, logger)
+
+    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
     fuwu_op = FuwuOperate(
         driver, logger, webview_operate=webview_op,
         expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
     )
-    """用例15：服务模块页面操作。"""
     fuwu_op.click_fuwu_tab()
     logger.info("[用例15] 点击服务按钮-完成")
     fuwu_op.click_store_btn()
