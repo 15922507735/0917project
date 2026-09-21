@@ -126,3 +126,8 @@ STORE_CHARGE_BACK_BTN = (
     AppiumBy.XPATH,
     f"//android.view.View[@resource-id='app']/android.view.View[2]/android.view.View/android.view.View[1]/android.view.View[1]",
 )
+# 金融试算文本
+STORE_FINANCE_TEXT = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/name' and @text='金融试算']",
+)
