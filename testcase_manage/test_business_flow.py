@@ -631,40 +631,91 @@ def test_fatie_input_draft(
     
     
     
-@pytest.mark.regression
-def test_fuwu_page_op(driver, logger, is_logged_in_session):
-    """用例15：服务模块页面操作。"""
-    # 先确保 APP 处于发现页（处理冷启动 / 上个用例污染）
+# ===================== 用例 15-20：服务模块拆分用例 =====================
+
+
+def _build_fuwu_op(driver, logger):
+    """构造服务操作实例，前置 _ensure_ready 把 APP 拉到发现页。"""
     login_op, first_page_op = _build_ops(driver, logger)
     _ensure_ready(login_op, first_page_op, logger)
-
     webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    fuwu_op = FuwuOperate(
+    return FuwuOperate(
         driver, logger, webview_operate=webview_op,
         expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
     )
+
+
+# ===================== 用例 15：点击服务 Tab =====================
+@pytest.mark.regression
+def test_click_fuwu_tab(driver, logger, is_logged_in_session):
+    """用例15：点击底部"服务"Tab，断言服务页面加载完成（出现"门店"文本）。"""
+    fuwu_op = _build_fuwu_op(driver, logger)
     fuwu_op.click_fuwu_tab()
-    logger.info("[用例15] 点击服务按钮-完成")
+    logger.info("[用例15] 点击服务 Tab-完成")
+
+
+# ===================== 用例 16：点击门店 =====================
+@pytest.mark.regression
+def test_click_store_btn(driver, logger, is_logged_in_session):
+    """用例16：在服务首页点击门店按钮，断言门店详情页加载（出现位置按钮）。"""
+    fuwu_op = _build_fuwu_op(driver, logger)
+    fuwu_op.click_fuwu_tab()
     fuwu_op.click_store_btn()
-    logger.info("[用例15] 点击门店按钮-完成")
+    logger.info("[用例16] 点击门店按钮-完成")
+
+
+# ===================== 用例 17：点击门店详情位置按钮 =====================
+@pytest.mark.regression
+def test_click_store_address_btn(driver, logger, is_logged_in_session):
+    """用例17：点击门店详情位置按钮，断言弹窗加载（出现"确定"按钮）。"""
+    fuwu_op = _build_fuwu_op(driver, logger)
+    fuwu_op.click_fuwu_tab()
+    fuwu_op.click_store_btn()
     fuwu_op.click_store_address_btn()
-    logger.info("[用例15] 点击门店详情位置按钮-完成")
+    logger.info("[用例17] 点击门店详情位置按钮-完成")
+
+
+# ===================== 用例 18：点击位置弹窗确定按钮 =====================
+@pytest.mark.regression
+def test_click_store_address_btn_submit(driver, logger, is_logged_in_session):
+    """用例18：点击位置弹窗的确定按钮，断言弹窗关闭。"""
+    fuwu_op = _build_fuwu_op(driver, logger)
+    fuwu_op.click_fuwu_tab()
+    fuwu_op.click_store_btn()
+    fuwu_op.click_store_address_btn()
     fuwu_op.click_store_address_btn_submit()
-    logger.info("[用例15] 点击位置弹窗确定按钮-完成")
+    logger.info("[用例18] 点击位置弹窗确定按钮-完成")
+
+
+# ===================== 用例 19：门店详情→交付→维保→返回 =====================
+@pytest.mark.regression
+def test_click_store_deliver_maint_back(driver, logger, is_logged_in_session):
+    """用例19：门店详情页 → 收起 → 交付中心 → 维保中心 → 返回到门店列表。"""
+    fuwu_op = _build_fuwu_op(driver, logger)
+    fuwu_op.click_fuwu_tab()
+    fuwu_op.click_store_btn()
     fuwu_op.click_store_search_btn()
-    logger.info("[用例15] 点击门店收起展开按钮-完成")
+    logger.info("[用例19] 点击门店收起展开按钮-完成")
     fuwu_op.click_store_deliver_btn()
-    logger.info("[用例15] 点击交付中心按钮-完成")
+    logger.info("[用例19] 点击交付中心按钮-完成")
     fuwu_op.click_store_maint_btn()
-    logger.info("[用例15] 点击维护中心按钮-完成")
+    logger.info("[用例19] 点击维护中心按钮-完成")
     fuwu_op.click_store_back_btn()
-    logger.info("[用例15] 点击门店详情返回按钮-完成")
+    logger.info("[用例19] 点击门店详情返回按钮-完成")
+
+
+# ===================== 用例 20：服务首页→滑动→家充服务→返回 =====================
+@pytest.mark.regression
+def test_click_store_charge(driver, logger, is_logged_in_session):
+    """用例20：服务首页 → 上滑 → 点家充服务 → 返回。"""
+    fuwu_op = _build_fuwu_op(driver, logger)
+    fuwu_op.click_fuwu_tab()
     fuwu_op.swipe_up()
-    logger.info("[用例15] 滑动返回按钮-完成")
+    logger.info("[用例20] 滑动成功-完成")
     fuwu_op.click_store_charge_btn()
-    logger.info("[用例15] 点击家充服务按钮-完成")
+    logger.info("[用例20] 点击家充服务按钮-完成")
     fuwu_op.click_store_charge_back_btn()
-    logger.info("[用例15] 点击家充装返回按钮-完成")
+    logger.info("[用例20] 点击家充装返回按钮-完成")
 
 
 
