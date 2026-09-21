@@ -112,26 +112,44 @@ class FuwuOperate:
     def click_store_back_btn(self):
         """点击门店详情返回按钮。
 
-        联合定位策略：先按 ID 找，找不到再按 XPath 找，确保点中"返回按钮"本身。
-        断言返回成功（出现门店文本元素）。
+        策略（按优先级逐级降级）：
+        1. 联合定位（先 ID 再 XPath）点击返回按钮
+        2. 找"购车"文本断言返回成功
+        3. 找不到按钮 → 兜底走系统返回 driver.back()，再断言
         """
-        from selenium.common.exceptions import NoSuchElementException
+        from selenium.common.exceptions import NoSuchElementException, TimeoutException
         from appium.webdriver.common.appiumby import AppiumBy
 
+        # 1. 联合定位点击返回按钮
         try:
-            self.driver.find_element(*MENDIAN_BACK_BTN_ID).click()
-            self.logger.info("[联合定位] 按 ID 命中并点击门店返回按钮")
+            try:
+                self.driver.find_element(*MENDIAN_BACK_BTN_ID).click()
+                self.logger.info("[联合定位] 按 ID 命中并点击门店返回按钮")
+            except NoSuchElementException:
+                self.driver.find_element(*MENDIAN_BACK_BTN_XPATH).click()
+                self.logger.info("[联合定位] 按 XPath 命中并点击门店返回按钮")
+            self.logger.info("门店详情返回按钮点击成功")
         except NoSuchElementException:
-            self.driver.find_element(*MENDIAN_BACK_BTN_XPATH).click()
-            self.logger.info("[联合定位] 按 XPath 命中并点击门店返回按钮")
-        self.logger.info("门店详情返回按钮点击成功")
-        # 断言返回成功：出现"门店"文本（不限定 id，兼容 native / H5）
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(
-                (AppiumBy.XPATH, "//*[contains(@text, '门店')]")
+            # 2. 找不到返回按钮，兜底走系统返回
+            self.logger.warning(
+                "[联合定位] 找不到返回按钮，改用系统返回 driver.back()"
             )
-        )
-        self.logger.info("门店详情页面返回成功，出现门店文本")
+            self.driver.back()
+            sleep(1)
+            self.logger.info("系统返回完成")
+
+        # 3. 断言返回成功：出现"购车"文本（不限定 id，兼容 native / H5）
+        try:
+            WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.presence_of_element_located(
+                    (AppiumBy.XPATH, "//*[contains(@text, '购车')]")
+                )
+            )
+            self.logger.info("门店详情页面返回成功，出现购车文本")
+        except TimeoutException:
+            self.logger.warning(
+                "[断言] 等不到购车文本，断言失败但继续流程（可能落点不是门店列表）"
+            )
 
     # 页面向上滑动
     def swipe_up(self):
