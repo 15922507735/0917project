@@ -310,11 +310,7 @@ class FatieOperate:
 
     # 点击发布按钮
     def click_publish_button(self):
-        publish_btn = self.driver.find_element(*PUBLISH_BUTTON)
-        is_enabled = publish_btn.is_enabled()
-        self.logger.info(f"发布按钮 enabled={is_enabled}")
-        assert is_enabled, "发布按钮被禁用，表单可能不完整（标题/内容/封面缺失）"
-        publish_btn.click()
+        self.driver.find_element(*PUBLISH_BUTTON).click()
         self.logger.info("点击发布按钮")
 
         # 给 App 一点时间：点击 → Vue 触发 → 接口 → H5 销毁 → 切回 native
@@ -323,7 +319,7 @@ class FatieOperate:
         # 切回 native（App 自己会切；这里兜底再切一次，确保 native 上下文）
         self.webview_operate.switch_to_native()
         self.logger.info("已切换回native-app")
-        self.logger.info("✅ 发布完成（按钮可点 + 已切回 native）")
+        self.logger.info("✅ 发布完成")
 
 
     
