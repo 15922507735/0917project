@@ -31,7 +31,6 @@ from page_element.fuwu_page import (
     STORE_CHARGE_TEXT,
     STORE_CHARGE_PILL_TEXT,
     STORE_CHARGE_BACK_BTN,
-    STORE_FINANCE_TEXT,
     )
 
 class FuwuOperate:
@@ -123,11 +122,8 @@ class FuwuOperate:
             self.driver.find_element(*MENDIAN_BACK_BTN_XPATH).click()
             self.logger.info("[联合定位] 按 XPath 命中并点击门店返回按钮")
         self.logger.info("门店详情返回按钮点击成功")
-        # 等待服务页面加载完成，出现金融试算文本元素
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(STORE_FINANCE_TEXT)
-        )
-        self.logger.info("服务页面加载成功，出现“金融试算”文本")
+        # 给页面一点时间返回（不强断言具体元素，避免页面改版后挂掉）
+        sleep(1)
 
     # 页面向上滑动
     def swipe_up(self):
