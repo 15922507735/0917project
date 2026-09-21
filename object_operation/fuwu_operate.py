@@ -113,14 +113,24 @@ class FuwuOperate:
         """点击门店详情返回按钮。
 
         策略（按优先级逐级降级）：
-        1. 联合定位（先 ID 再 XPath）点击返回按钮
-        2. 找"购车"文本断言返回成功
-        3. 找不到按钮 → 兜底走系统返回 driver.back()，再断言
+        1. 先试联合定位点击返回按钮
+        2. 反复 driver.back() 直到断言"购车"文本出现，最多 5 次
+        3. 始终不出现则 warning 不 fail
         """
         from selenium.common.exceptions import NoSuchElementException, TimeoutException
         from appium.webdriver.common.appiumby import AppiumBy
 
-        # 1. 联合定位点击返回按钮
+        # 0. 强制切回 NATIVE_APP context（确保 driver.back() 走 native 而不是 H5）
+        try:
+            if "NATIVE_APP" in self.driver.contexts:
+                self.driver.switch_to.context("NATIVE_APP")
+                self.logger.info("[click_store_back] 已切回 NATIVE_APP context")
+        except Exception as e:
+            self.logger.warning(
+                f"[click_store_back] 切 NATIVE 失败: {e.__class__.__name__}: {e}"
+            )
+
+        # 1. 联合定位点击（不报错，只打 warning 让流程继续）
         try:
             try:
                 self.driver.find_element(*MENDIAN_BACK_BTN_ID).click()
@@ -130,26 +140,39 @@ class FuwuOperate:
                 self.logger.info("[联合定位] 按 XPath 命中并点击门店返回按钮")
             self.logger.info("门店详情返回按钮点击成功")
         except NoSuchElementException:
-            # 2. 找不到返回按钮，兜底走系统返回
             self.logger.warning(
-                "[联合定位] 找不到返回按钮，改用系统返回 driver.back()"
+                "[联合定位] 找不到返回按钮，改用 driver.back() 系统返回"
             )
-            self.driver.back()
-            sleep(1)
-            self.logger.info("系统返回完成")
 
-        # 3. 断言返回成功：出现"购车"文本（不限定 id，兼容 native / H5）
-        try:
-            WebDriverWait(self.driver, self.expect_wait_timeout).until(
-                EC.presence_of_element_located(
-                    (AppiumBy.XPATH, "//*[contains(@text, '购车')]")
+        # 2. 反复 driver.back() 直到断言命中（最多 5 次，每次 sleep 1s 让页面切换）
+        car_text_locator = (AppiumBy.XPATH, "//*[contains(@text, '购车')]")
+        max_back = 5
+        for i in range(max_back):
+            try:
+                WebDriverWait(self.driver, 2).until(
+                    EC.presence_of_element_located(car_text_locator)
                 )
-            )
-            self.logger.info("门店详情页面返回成功，出现购车文本")
-        except TimeoutException:
-            self.logger.warning(
-                "[断言] 等不到购车文本，断言失败但继续流程（可能落点不是门店列表）"
-            )
+                self.logger.info(
+                    f"门店详情页面返回成功，出现购车文本（额外按了 {i} 次返回）"
+                )
+                return
+            except TimeoutException:
+                pass
+            # 没命中，再按一次返回
+            try:
+                self.driver.back()
+                self.logger.info(f"[click_store_back] 第 {i+1} 次 driver.back()")
+            except Exception as e:
+                self.logger.warning(
+                    f"[click_store_back] driver.back 失败: {e.__class__.__name__}"
+                )
+                break
+            sleep(1)
+
+        # 3. 始终不命中，warning 不 fail（继续走 swipe_up）
+        self.logger.warning(
+            "[断言] 连按 5 次返回仍看不到购车文本，继续流程"
+        )
 
     # 页面向上滑动
     def swipe_up(self):
