@@ -39,6 +39,11 @@ from page_element.login_page import (
     PHONECODE,
 )
 
+# ===================== 可调参数（phone / password） =====================
+# 顶部集中维护默认账号；用例/测试可通过参数覆盖
+DEFAULT_PHONE: str = "18908323900"
+DEFAULT_PASSWORD: str = "Aa123456"
+
 
 class LoginOperate:
     """登录页 / 前置引导页操作封装。
@@ -321,11 +326,11 @@ class LoginOperate:
         """切换到「密码登录」页签。"""
         self._click(GO_PASSLOGIN_BTN, "切换密码登录")
 
-    def input_phone(self, phone: str = "18908323900") -> None:
+    def input_phone(self, phone: str = DEFAULT_PHONE) -> None:
         """输入手机号。"""
         self._input(IMSPHONE, phone, "手机号")
 
-    def input_password(self, password: str = "Aa123456") -> None:
+    def input_password(self, password: str = DEFAULT_PASSWORD) -> None:
         """输入密码。"""
         self._input(IMGCODE, password, "密码")
 
@@ -403,8 +408,8 @@ class LoginOperate:
     # ===================== 一站式登录入口 =====================
     def login(
         self,
-        phone: str = "18908323900",
-        password: str = "Aa123456",
+        phone: str = DEFAULT_PHONE,
+        password: str = DEFAULT_PASSWORD,
     ) -> None:
         """一站式登录：进入「我的」→「未登录」→ 切密码登录 → 填表 → 勾协议 → 提交。
 

@@ -21,6 +21,11 @@ STORE_BTN = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/imgrt",
 )
+# 门店标题右侧的跳转箭头(与 "门店" TextView 同一行)
+STORE_BTN_XPATH = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tvtitle' and @text='门店']/../android.widget.ImageView[@resource-id='{APP_PACKAGE}:id/imgrt']",
+)
 # 门店详情位置按钮
 STORE_ADDRESS_BTN = (
     AppiumBy.XPATH,
@@ -105,10 +110,28 @@ STORE_AGREE_BTN = (
     AppiumBy.XPATH,
     f"//android.view.View[@resource-id='{APP_PACKAGE}:id/headerBox']/android.view.View[5]",
 )
-# 家充桩入口按钮
+# 广告图片家充桩按钮
 STORE_CHARGE_BTN = (
-    AppiumBy.ID,
-    f"{APP_PACKAGE}:id/l1img2",
+    AppiumBy.XPATH,
+    f"//android.widget.ImageView[@resource-id='com.changan.oushangCos1:id/l1img2']",
+)
+# 家充桩智享返回按钮（WEBVIEW 上下文，CSS 定位 navbar_back_icon）
+JIACHONG_ZHIXIANG_BACK_BTN = (
+    AppiumBy.CSS_SELECTOR, f"uni-image.navbar_back_icon" ,
+)
+# 家充智享页面标题
+JIACHONG_ZHIXIANG_TITLE = (
+    AppiumBy.XPATH,
+    f"//*[@resource-id='app']/uni-app/uni-page/uni-page-wrapper/uni-page-body/uni-view/uni-view[1]/uni-view[2]/uni-view[2]/uni-text/span",
+)
+# 指引指导文本元素（WEBVIEW 上下文，CSS 定位 card_title）
+STORE_CHARGE_GUIDE_TEXT = (
+    AppiumBy.CSS_SELECTOR,
+    f"uni-view.card_title",
+)
+# 家充装返回按钮
+STORE_CHARGE_BACK_BTN = (
+    AppiumBy.XPATH, f"//android.widget.Image[@text='svg%3e']" 
 )
 # 华为超充入口
 STORE_CHARGE_BTN_HUAWEI = (
@@ -123,15 +146,16 @@ STORE_CHARGE_TEXT = (
 # 家充桩文本元素
 STORE_CHARGE_PILL_TEXT = (
     AppiumBy.XPATH,
-    f"//android.view.View[@text='家充桩'][2]",
+    f"//android.view.View[@text='家桩智享']",
 )
-# 家充装返回按钮
-STORE_CHARGE_BACK_BTN = (
-    AppiumBy.XPATH,
-    f"//android.view.View[@resource-id='app']/android.view.View[2]/android.view.View/android.view.View[1]/android.view.View[1]",
-)
+
 # 金融试算文本
 STORE_FINANCE_TEXT = (
     AppiumBy.XPATH,
     f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/name' and @text='金融试算']",
+)
+# 购车入口
+STORE_BUY_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/adv",
 )
