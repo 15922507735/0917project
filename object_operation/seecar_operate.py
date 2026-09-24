@@ -27,19 +27,8 @@ class SeeCarOperate:
     # ===================== 工具方法 =====================
     def _dump_visible_texts(self, label: str, limit: int = 30) -> None:
         """打印当前页面所有可见元素的 text+id（仅前 N 条），用于排查元素定位问题。"""
-        try:
-            els = self.driver.find_elements(
-                By.XPATH, "//*[@text!='' or @resource-id!='']"
-            )
-            self.logger.info(f"[{label}] 当前页面可见元素（前 {limit} 条）：")
-            for i, el in enumerate(els[:limit], 1):
-                self.logger.info(
-                    f"  [{i}] text='{el.text}', "
-                    f"id='{el.get_attribute('resource-id')}', "
-                    f"class='{el.get_attribute('class')}'"
-                )
-        except Exception as e:
-            self.logger.warning(f"[{label}] dump 可见元素失败: {e}")
+        from utils.debug_helpers import dump_visible
+        dump_visible(self.driver, self.logger, label, limit=limit)
 
     # ===================== 看车 Tab =====================
     def click_entry_btn(self) -> None:

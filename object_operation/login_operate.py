@@ -65,19 +65,8 @@ class LoginOperate:
     # ===================== 内部工具方法 =====================
     def _dump_visible(self, label: str) -> None:
         """打印当前页面所有可见元素，便于排查 id 不存在的问题。"""
-        try:
-            elements = self.driver.find_elements(
-                By.XPATH, "//*[@text!='' or @resource-id!='']"
-            )
-            self.logger.info(f"[{label}] 当前页面可见元素：")
-            for el in elements:
-                self.logger.info(
-                    f"  - text='{el.text}', "
-                    f"id='{el.get_attribute('resource-id')}', "
-                    f"class='{el.get_attribute('class')}'"
-                )
-        except Exception as e:
-            self.logger.warning(f"[{label}] dump 可见元素失败: {e}")
+        from utils.debug_helpers import dump_visible
+        dump_visible(self.driver, self.logger, label)
 
     def _click(self, locator, name: str) -> None:
         """点击元素；失败时 dump 可见元素 + 抛异常。"""
@@ -250,17 +239,8 @@ class LoginOperate:
 
     def _close_anr_dialog_if_exists(self, timeout: int = 2) -> bool:
         """检测并关闭 APP 崩溃 / ANR 弹窗（"xxx 已停止运行"）。"""
-        try:
-            close_btn = WebDriverWait(self.driver, timeout).until(
-                EC.presence_of_element_located(CLOSE_BTN)
-            )
-            if close_btn.is_displayed():
-                close_btn.click()
-                self.logger.info("已关闭 ANR/崩溃弹窗")
-                return True
-        except Exception:
-            return False
-        return False
+        from utils.debug_helpers import close_anr_if_exists
+        return close_anr_if_exists(self.driver, self.logger, timeout)
 
     # ===================== 用例间状态恢复 =====================
     def relaunch_app(self) -> None:

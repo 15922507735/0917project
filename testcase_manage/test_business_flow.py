@@ -26,7 +26,12 @@
 - test_click_shequ_tab：回归，点击社区 Tab + 断言热门话题（**登录/未登录都跑**）
 - test_click_topic_square：回归，切社区页 + 点击话题广场（**登录/未登录都跑**）
 - test_click_topic_all_page_btn：回归，切社区页 + 点击最新标签（**登录/未登录都跑**）
-
+- test_click_fuwu_btn：回归，切服务页 + 点击家充服务（**登录/未登录都跑**）
+- test_click_jiachong_zhixiang_back_btn：回归，切服务页 + 点击家充桩智享返回按钮（**登录/未登录都跑**）
+- test_click_store_charge_guide_text：回归，切服务页 + 点击指引指导文本元素（**登录/未登录都跑**）
+- test_click_store_charge_back_btn：回归，切服务页 + 点击家充装返回按钮（**登录/未登录都跑**）
+- test_click_store_charge_btn：回归，切服务页 + 点击广告充桩按钮（**登录/未登录都跑**）
+- test_click_store_charge_back_btn：回归，切服务页 + 点击家充装返回按钮（**登录/未登录都跑**）
 
 
 运行方式：
@@ -51,6 +56,7 @@ from object_operation.shequ_operate import ShequOperate
 from object_operation.huodong_operate import HuodongOperate
 from object_operation.fatie_operate import FatieOperate
 from object_operation.fuwu_operate import FuwuOperate
+from object_operation.buycar_operate import BuycarOperate
 
 from page_element.login_page import (
     APP_PACKAGE,
@@ -58,53 +64,16 @@ from page_element.login_page import (
 )
 from page_element.fatie_page import PUBLISH_BUTTON, PUBLISH_SUCCESS_TEXT
 from testcase_manage.data.fatie_data import FATIE_DRAFT_DATA
+from utils.test_helpers import (
+    build_ops as _build_ops,
+    ensure_ready as _ensure_ready,
+    build_fuwu_op as _build_fuwu_op,
+    build_fuwu_op_keep as _build_fuwu_op_keep,
+    build_buycar_op as _build_buycar_op,
+)
 
 
-# ===================== 共享：构造 operate 实例 =====================
-def _build_ops(driver, logger):
-    """根据 session 级 driver 构造 LoginOperate / FirstPageOperate。"""
-    login_op = LoginOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    first_page_op = FirstPageOperate(
-        driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT
-    )
-    return login_op, first_page_op
-
-
-def _ensure_ready(login_op, first_page_op, logger) -> None:
-    """用例开始前调用：保证 APP 处于「发现」首页。
-
-    状态机（基于"登录成功 + 热启动 APP 后停在发现页"）：
-    1. 探测当前是否已在发现页（first_page_op.is_on_discover_page()）：
-       - 已在发现页 → 跳过所有前置流程（点协议 / 左滑 / 入口 5 次 / 切发现），
-         直接结束 —— 这就是"已登录 / 热启动后"的稳态；
-       - 不在发现页 → 走完整前置流程（点同意 → 左滑 3 → 入口 5 → 兜底再点同意），
-         然后切到「发现」首页。
-
-    失败时仅打 warning，不抛异常 —— 让用例自己决定如何处理。
-    """
-    # 1. 探测是否已在发现页
-    on_discover = False
-    try:
-        on_discover = first_page_op.is_on_discover_page()
-    except Exception as e:
-        logger.warning(f"[ensure_ready] 探测发现页失败: {e}")
-
-    if on_discover:
-        logger.info("[ensure_ready] 已在发现页 → 跳过全部前置流程")
-        return
-
-    # 2. 不在发现页 → 走完整前置流程
-    logger.info("[ensure_ready] 不在发现页 → 走完整前置流程")
-    try:
-        login_op.run_pre_login_flow()
-    except Exception as e:
-        logger.warning(f"[ensure_ready] 前置流程部分失败（不影响）: {e}")
-
-    # 3. 切到「发现」首页
-    try:
-        first_page_op.click_discover_tab()
-    except Exception as e:
-        logger.warning(f"[ensure_ready] 切发现 Tab 失败（可能已在发现页）: {e}")
+# ===================== 共享辅助函数已提取至 utils/test_helpers.py =====================
 
 
 # ===================== 用例 1 =====================
@@ -282,7 +251,7 @@ def test_click_seecar_btn(driver, logger):
 
 # ===================== 用例 7 =====================
 @pytest.mark.regression
-def test_click_shequ_tab(driver, logger, is_logged_in_session):
+def test_click_shequ_tab(driver, logger):
     """用例 7：点击进入社区 Tab 并断言社区页加载完成。
 
     操作步骤：
@@ -309,7 +278,7 @@ def test_click_shequ_tab(driver, logger, is_logged_in_session):
 
 # ===================== 用例 8 =====================
 @pytest.mark.regression
-def test_click_topic_square(driver, logger, is_logged_in_session):
+def test_click_topic_square(driver, logger):
     """用例 8：点击话题广场按钮。
 
     操作步骤：
@@ -345,7 +314,7 @@ def test_click_topic_square(driver, logger, is_logged_in_session):
     logger.info("[用例8] 点击查看更多按钮-完成")
 # ===================== 用例 9 =====================
 @pytest.mark.regression
-def test_click_topic_all_page_btn(driver, logger, is_logged_in_session):
+def test_click_topic_all_page_btn(driver, logger):
     # 方案A：不调 _ensure_ready —— 用例 8 最后一步已停在"所有圈子" WebView 页，
     # 本用例直接在该页面操作，无需（也不能）回发现页，否则会误走前置流程。
     # 注意：必须紧接用例 8 之后运行。
@@ -365,7 +334,7 @@ def test_click_topic_all_page_btn(driver, logger, is_logged_in_session):
     # 点击返回，出现热门话题元素，则表示成功
 # ===================== 用例 10 =====================
 @pytest.mark.regression
-def test_click_topic_neirong(driver, logger, is_logged_in_session):
+def test_click_topic_neirong(driver, logger):
     """用例 10：点击社区内容标签-最新、视频、关注、聊天。
 
     本用例不依赖用例 9 状态，自带导航：
@@ -397,7 +366,7 @@ def test_click_topic_neirong(driver, logger, is_logged_in_session):
     logger.info("[用例10] 点击聊天列表返回按钮-完成")
 # ===================== 用例 11 =====================
 @pytest.mark.regression
-def test_click_huodong_status(driver, logger, is_logged_in_session):
+def test_click_huodong_status(driver, logger):
     login_op, first_page_op = _build_ops(driver, logger)
     _ensure_ready(login_op, first_page_op, logger)
 
@@ -414,7 +383,7 @@ def test_click_huodong_status(driver, logger, is_logged_in_session):
     logger.info("[用例11] 点击确定按钮-完成")
 # ===================== 用例 12 =====================
 @pytest.mark.regression
-def test_click_post_button(driver, logger, is_logged_in_session):
+def test_click_post_button(driver, logger):
     """用例 12：点击发帖入口按钮。"""
     login_op, first_page_op = _build_ops(driver, logger)
     _ensure_ready(login_op, first_page_op, logger)
@@ -489,7 +458,7 @@ def _fatie_native_reset(driver, logger) -> None:
            "设环境变量 RUN_PUBLISH=1 启用。",
 )
 @pytest.mark.regression
-def test_click_fatie(driver, logger, is_logged_in_session):
+def test_click_fatie(driver, logger):
     """用例 13：发帖完整流程（含上传封面）。
 
     自带导航（不依赖用例 12 状态）：
@@ -614,7 +583,7 @@ def _navigate_to_fatie_editor(driver, logger, fatie_op):
 )
 @pytest.mark.regression
 def test_fatie_input_draft(
-    driver, logger, is_logged_in_session, fatie_op,
+    driver, logger, fatie_op,
     case_id, title, content_text, expected_keyword,
 ):
     """用例14：数据驱动：发帖标题 + 富文本内容输入。"""
@@ -632,36 +601,12 @@ def test_fatie_input_draft(
     
     
 # ===================== 用例 15-20：服务模块拆分用例 =====================
-
-
-def _build_fuwu_op(driver, logger):
-    """构造服务操作实例，前置 _ensure_ready 把 APP 拉到发现页。"""
-    login_op, first_page_op = _build_ops(driver, logger)
-    _ensure_ready(login_op, first_page_op, logger)
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    return FuwuOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
-
-
-def _build_fuwu_op_keep(driver, logger):
-    """构造服务操作实例，不做 ensure_ready 直接复用当前页面。
-
-    用例 16~20 跟在用例 15 之后跑时，APP 已在服务 Tab，强行 _ensure_ready
-    会因为"推荐 Tab 不可见"被判定为未在发现页，触发冷启动前置流程失败。
-    本函数只构造实例，不动页面状态，把"是否在服务页"交给 click_fuwu_tab 内部断言。
-    """
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    return FuwuOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
+# _build_fuwu_op / _build_fuwu_op_keep 已提取至 utils/test_helpers.py
 
 
 # ===================== 用例 15：点击服务 Tab =====================
 @pytest.mark.regression
-def test_click_fuwu_tab(driver, logger, is_logged_in_session):
+def test_click_fuwu_tab(driver, logger):
     """用例15：点击底部"服务"Tab，断言服务页面加载完成（出现"门店"文本）。"""
     fuwu_op = _build_fuwu_op(driver, logger)
     fuwu_op.click_fuwu_tab()
@@ -670,7 +615,7 @@ def test_click_fuwu_tab(driver, logger, is_logged_in_session):
 
 # ===================== 用例 16：点击门店 =====================
 @pytest.mark.regression
-def test_click_store_btn(driver, logger, is_logged_in_session):
+def test_click_store_btn(driver, logger):
     
     """用例16：在服务首页点击门店跳转按钮，断言门店详情页加载（出现位置按钮）。
 
@@ -687,7 +632,7 @@ def test_click_store_btn(driver, logger, is_logged_in_session):
 
 # ===================== 用例 17：点击门店详情位置按钮 =====================
 @pytest.mark.regression
-def test_click_store_address_btn(driver, logger, is_logged_in_session):
+def test_click_store_address_btn(driver, logger):
     """用例17：点击门店详情位置按钮，断言弹窗加载（出现"确定"按钮）。
 
     用例 16 跑完停在门店详情页，本用例直接复用该状态继续往下点位置按钮。
@@ -700,7 +645,7 @@ def test_click_store_address_btn(driver, logger, is_logged_in_session):
 
 # ===================== 用例 18：点击位置弹窗确定按钮 =====================
 @pytest.mark.regression
-def test_click_store_address_btn_submit(driver, logger, is_logged_in_session):
+def test_click_store_address_btn_submit(driver, logger):
     """用例18：点击位置弹窗的确定按钮，断言弹窗关闭。
 
     用例 17 跑完位置弹窗已开，本用例直接点弹窗"确定"按钮关闭弹窗。
@@ -712,7 +657,7 @@ def test_click_store_address_btn_submit(driver, logger, is_logged_in_session):
 
 # ===================== 用例 19：门店详情→交付→维保→返回服务首页 =====================
 @pytest.mark.regression
-def test_click_store_deliver_maint_back(driver, logger, is_logged_in_session):
+def test_click_store_deliver_maint_back(driver, logger):
     """用例19：门店详情页 → 收起 → 交付中心 → 维保中心 → 返回到服务首页。
 
     用例 18 跑完位置弹窗已关，仍在门店详情页，本用例直接复用该状态继续。
@@ -731,7 +676,7 @@ def test_click_store_deliver_maint_back(driver, logger, is_logged_in_session):
 
 # ===================== 用例 20：服务首页→滑动→家充服务→返回 =====================
 @pytest.mark.regression
-def test_click_store_charge(driver, logger, is_logged_in_session):
+def test_click_store_charge(driver, logger):
     """用例20：服务首页 → 上滑 → 点家充服务 → 返回。
 
     用例 19 的 click_store_back_btn 已保证 APP 回到服务首页（含购车文本可见），
@@ -748,5 +693,29 @@ def test_click_store_charge(driver, logger, is_logged_in_session):
     logger.info("[用例20] 点击家充桩智享返回按钮-完成")
 
 
+# ===================== 用例 21：购车模块操作 =====================
+# _build_buycar_op 已提取至 utils/test_helpers.py
 
+
+@pytest.mark.regression
+def test_click_store_buy(driver, logger):
+
+    """用例21：购车模块操作。"""
+    buycar_op = _build_buycar_op(driver, logger)
+    buycar_op.click_store_buy_btn()
+    logger.info("[用例21] 点击购车tab按钮-完成")
+    buycar_op.click_store_order_btn()
+    logger.info("[用例21] 点击立即订购按钮-完成")
+    buycar_op.click_store_config_version_btn()
+    logger.info("[用例21] 点击去选择车型版本-完成")
+    buycar_op.click_store_config_next_btn()
+    logger.info("[用例21] 点击外观 -> 下一步-完成")
+    buycar_op.click_store_config_interior_color_btn()
+    logger.info("[用例21] 点击外观颜色卡片-完成")
+    buycar_op.click_store_config_interior_next_btn()
+    logger.info("[用例21] 点击内饰按钮到下一步-完成")
+    buycar_op.click_store_config_ext_next_btn()
+    logger.info("[用例21] 点击选装按钮到下一步-完成")
+
+    
     

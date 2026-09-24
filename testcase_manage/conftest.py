@@ -81,18 +81,11 @@ def _build_appium_options() -> UiAutomator2Options:
 
 def _close_anr_if_exists(d, logger_obj, timeout: int = 2) -> bool:
     """检测并关闭系统级 ANR / 崩溃弹窗，返回 True 表示关闭了一次。"""
-    try:
-        btn = WebDriverWait(d, timeout).until(
-            EC.presence_of_element_located(CLOSE_BTN)
-        )
-        if btn.is_displayed():
-            btn.click()
-            logger_obj.info("[driver] 已关闭 ANR / 崩溃弹窗")
-            sleep(2)
-            return True
-    except Exception:
-        return False
-    return False
+    from utils.debug_helpers import close_anr_if_exists
+    result = close_anr_if_exists(d, logger_obj, timeout)
+    if result:
+        sleep(2)
+    return result
 
 
 def _relaunch_app(d, logger_obj):

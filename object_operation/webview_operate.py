@@ -144,13 +144,8 @@ class WebViewOperate:
     # ===================== 源码 dump =====================
     def _dump_webview_html(self, save_name: str = "debug_webview.html") -> None:
         """dump 当前 WebView 的页面源码到本地，便于排查 H5 元素定位失败。"""
-        try:
-            html = self.driver.page_source
-            with open(save_name, "w", encoding="utf-8") as f:
-                f.write(html)
-            self.logger.info(f"已保存 WebView 页面源码: {save_name} (length={len(html)})")
-        except Exception as e:
-            self.logger.warning(f"保存 WebView 源码失败: {e}")
+        from utils.debug_helpers import dump_webview_html
+        dump_webview_html(self.driver, self.logger, save_name)
 
     # ===================== 业务专属：聚合页配置选择 =====================
     def wait_aggregate_config_page(self, timeout: int | None = None) -> None:
