@@ -12,7 +12,7 @@ from appium.webdriver.common.appiumby import AppiumBy
 
 from page_element.login_page import EXPECT_WAIT_TIMEOUT
 
-from page_element.buycat_page import (
+from page_element.buycar_page import (
     STORE_BUY_BTN,
     STORE_ORDER_BTN,
     STORE_CONFIG_CHOOSE_TIP,
@@ -135,6 +135,17 @@ class BuycarOperate:
         
     # 点击选装按钮到下一步
     def click_store_config_ext_next_btn(self):
-        """点击选装按钮到下一步。"""
-        self.driver.find_element(*STORE_CONFIG_EXT_NEXT_BTN).click()
+        """点击选装按钮到下一步。
+
+        失败时 dump 当前 WebView HTML + dump_visible（通过延迟导入避免循环依赖），
+        便于排查 "选装按钮是否真的存在" / "XPath 是否匹配"。
+        """
+        try:
+            self.driver.find_element(*STORE_CONFIG_EXT_NEXT_BTN).click()
+        except Exception as e:
+            from utils.debug_helpers import dump_visible, dump_webview_html
+            dump_webview_html(self.driver, self.logger, "debug_buycar_ext_next.html")
+            dump_visible(self.driver, self.logger, "click_store_config_ext_next_btn 失败", limit=80)
+            self.logger.error(f"点击选装按钮失败: {e}")
+            raise
         self.logger.info("点击选装按钮到下一步成功")
