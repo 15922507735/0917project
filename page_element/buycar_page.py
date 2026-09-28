@@ -1,6 +1,9 @@
 from __future__ import annotations
 from appium.webdriver.common.appiumby import AppiumBy
 from .login_page import APP_PACKAGE
+from selenium.webdriver.common.by import By
+
+
 
 """
 购车页面元素
@@ -92,4 +95,62 @@ STORE_CONFIG_EXT_NEXT_BTN = (
 STORE_CONFIG_INTERIOR_COLOR_BTN = (
     AppiumBy.XPATH,
     "//*[@id='van-tab-3']/div/div[1]/div[1]/img",
+)
+# 添加🤔按钮
+STORE_CONFIG_THINK_BTN = (
+    AppiumBy.XPATH,
+    "//*[@id='van-tab-4']/div/div/div[2]/div[2]",
+)
+# "订单中心 ->" 下一步按钮（切 Tab 到订单中心）
+# 与 STORE_CONFIG_NEXT_BTN / STORE_CONFIG_INTERIOR_NEXT_BTN / STORE_CONFIG_EXT_NEXT_BTN 同模式：
+# bottomDes 容器下 + bdBtn 内含 span "订单中心"
+STORE_CONFIG_ORDER_NEXT_BTN = (
+    AppiumBy.XPATH,
+    "//div[contains(@class,'bottomDes')]//div[contains(@class,'bdBtn')][.//span[contains(.,'订单中心')]]",
+)
+# 完成配置按钮
+STORE_CONFIG_COMPLETE_BTN = (
+    AppiumBy.XPATH,
+    "//div[contains(@class,'bottomDes')]//div[contains(@class,'bdBtn')][.//span[contains(.,'完成配置')]]",
+)
+# 订单中心勾选按钮 —— 点商家列表第一条的左侧圆形勾选 icon
+# van-tab-5 下 listbox 容器内的第一个 list-l 元素下的 icon（listbox 是商家列表容器）
+STORE_CONFIG_ORDER_CHECK_BTN = (
+    AppiumBy.XPATH,
+    "//*[@id='van-tab-5']//div[contains(@class,'listbox')][1]//i[contains(@class,'icon')]",
+)
+# 保存配置按钮
+STORE_CONFIG_SAVE_BTN = (
+    AppiumBy.XPATH,
+    "//*[@id='app']/div[2]/div/div[4]/div[4]/div/div[1]",
+)
+# 去订购按钮
+STORE_CONFIG_ORDER_BTN = (
+    AppiumBy.XPATH,
+    "//*[@id='app']/div[2]/div/div[4]/div[4]/div/div[2]",
+)
+# 车主姓名输入框（按 name 属性定位，避免 class 名变化导致失效）
+STORE_CONFIG_NAME = (
+    By.CSS_SELECTOR,
+    'input[name="user"]',
+)
+# 证件号码输入框（按 name 属性定位，避免 class 名变化导致失效）
+STORE_CONFIG_IDCARD = (
+    By.CSS_SELECTOR,
+    'input[name="idcard"]',
+)
+# 订购协议勾选框
+STORE_CONFIG_PROTOCOL_CHECK_BTN = (
+    By.XPATH,
+    "//*[@id='app']/div[2]/div[1]/div[2]/div[1]/div/img",
+)
+# 提交订单按钮
+STORE_CONFIG_SUBMIT_BTN = (
+    By.XPATH,
+    "//*[@id='app']/div[2]/div[1]/div[2]/div[2]/div/div",
+)
+# 我同意按钮
+STORE_CONFIG_AGREE_BTN = (
+    By.XPATH,
+    "//*[@id='app']/div[2]/div/div/div[2]/div",
 )

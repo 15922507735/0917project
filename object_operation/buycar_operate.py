@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from object_operation.webview_operate import WebViewOperate
 from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.common.by import By
 
 from page_element.login_page import EXPECT_WAIT_TIMEOUT
 
@@ -30,6 +31,17 @@ from page_element.buycar_page import (
     STORE_CONFIG_EXT_COLOR_BTN,
     STORE_CONFIG_EXT_NEXT_BTN,
     STORE_CONFIG_INTERIOR_COLOR_BTN,
+    STORE_CONFIG_THINK_BTN,
+    STORE_CONFIG_ORDER_NEXT_BTN,
+    STORE_CONFIG_COMPLETE_BTN,
+    STORE_CONFIG_ORDER_CHECK_BTN,
+    STORE_CONFIG_SAVE_BTN,
+    STORE_CONFIG_ORDER_BTN,
+    STORE_CONFIG_NAME,
+    STORE_CONFIG_IDCARD,
+    STORE_CONFIG_PROTOCOL_CHECK_BTN,
+    STORE_CONFIG_SUBMIT_BTN,
+    STORE_CONFIG_AGREE_BTN,
 )
 
 class BuycarOperate:
@@ -91,13 +103,13 @@ class BuycarOperate:
     # 点击去选择车型版本，选择第一个版本卡片
     def click_store_config_version_btn(self):
         """点击去选择车型版本，选择第一个版本卡片。"""
-        # 等待版本标题出现（mvlTit，小写 L）
+        # 等待版本标题出现（mvlTit，小写 L）—— 按位置取第一个版本，不依赖具体版本名
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(STORE_CONFIG_VERSION_TITLE)
+            EC.presence_of_element_located(STORE_CONFIG_VERSION_FIRST_TITLE_CSS)
         )
         self.logger.info("版本列表已加载")
-        # 精准点击第一个版本标题（XPATH 文字限定，最稳）
-        self.driver.find_element(*STORE_CONFIG_VERSION_TITLE).click()
+        # 点击第一个版本标题
+        self.driver.find_element(*STORE_CONFIG_VERSION_FIRST_TITLE_CSS).click()
         self.logger.info("点击去选择车型版本成功")
         # 等待价格出现（确认版本已选中）
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
@@ -117,7 +129,7 @@ class BuycarOperate:
         self.logger.info("点击外观 -> 下一步成功，出现内饰 Tab 按钮")
 
     # 点击选择外观颜色卡片
-    def click_store_config_interior_color_btn(self):
+    def click_store_config_ext_color_btn(self):
         """点击选择外观颜色卡片。"""
         self.driver.find_element(*STORE_CONFIG_EXT_COLOR_BTN).click()
         self.logger.info("点击选择外观颜色卡片成功")
@@ -132,6 +144,12 @@ class BuycarOperate:
             EC.presence_of_element_located(STORE_CONFIG_EXT_NEXT_BTN)
         )
         self.logger.info("点击内饰按钮到下一步成功，出现选装按钮")
+
+    # 点击选择内饰颜色卡片
+    def click_store_config_interior_color_btn(self):
+        """点击选择内饰颜色卡片。"""
+        self.driver.find_element(*STORE_CONFIG_INTERIOR_COLOR_BTN).click()
+        self.logger.info("点击选择内饰颜色卡片成功")
         
     # 点击选装按钮到下一步
     def click_store_config_ext_next_btn(self):
@@ -149,3 +167,108 @@ class BuycarOperate:
             self.logger.error(f"点击选装按钮失败: {e}")
             raise
         self.logger.info("点击选装按钮到下一步成功")
+
+    # 点击添加选装按钮
+    def click_store_config_think_btn(self):
+        """点击添加选装按钮。"""
+        self.driver.find_element(*STORE_CONFIG_THINK_BTN).click()
+        self.logger.info("点击添加选装按钮成功")
+
+    # 点击订单中心下一步按钮
+    def click_store_config_order_next_btn(self):
+        """点击订单中心下一步按钮。"""
+        self.driver.find_element(*STORE_CONFIG_ORDER_NEXT_BTN).click()
+        self.logger.info("点击订单中心下一步按钮成功")
+        # 订单订单中心列表加载完成，出现完成配置按钮
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_CONFIG_COMPLETE_BTN)
+        )
+        self.logger.info("订单中心下一步加载成功，出现完成配置按钮")
+
+    # 选择订单中心
+    def click_store_config_order_check_btn(self):
+        """点击订单中心勾选按钮。
+
+        失败时 dump 当前 WebView HTML + dump_visible，便于排查
+        "订单中心 Tab 是否真的切到了" / "XPath 是否匹配"。
+        """
+        try:
+            check_btn = WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.element_to_be_clickable(STORE_CONFIG_ORDER_CHECK_BTN)
+            )
+            check_btn.click()
+            self.logger.info("点击订单中心勾选按钮成功")
+        except Exception as e:
+            from utils.debug_helpers import dump_visible, dump_webview_html
+            dump_webview_html(self.driver, self.logger, "debug_buycar_order_check.html")
+            dump_visible(
+                self.driver, self.logger,
+                "click_store_config_order_check_btn 失败",
+                limit=120,
+            )
+            self.logger.error(f"点击订单中心勾选按钮失败: {e}")
+            raise
+
+    # 点击完成配置按钮
+    def click_store_config_complete_btn(self):
+        """点击完成配置按钮。"""
+        self.driver.find_element(*STORE_CONFIG_COMPLETE_BTN).click()
+        self.logger.info("点击完成配置按钮成功")
+        # 等待保存配置按钮出现
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_CONFIG_SAVE_BTN)
+        )
+        self.logger.info("点击完成配置按钮成功，出现保存配置按钮")
+
+    # 点击去订购按钮
+    def click_store_config_order_btn(self):
+        """点击去订购按钮。"""
+        self.driver.find_element(*STORE_CONFIG_ORDER_BTN).click()
+        self.logger.info("点击去订购按钮成功")
+        # 等待车主姓名输入框出现
+        try:
+            WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.presence_of_element_located(STORE_CONFIG_NAME)
+            )
+            self.logger.info("点击去订购按钮成功，出现车主姓名输入框")
+        except Exception as e:
+            from utils.debug_helpers import dump_visible, dump_webview_html
+            dump_webview_html(self.driver, self.logger, "debug_buycar_order_btn.html")
+            dump_visible(
+                self.driver, self.logger,
+                "click_store_config_order_btn 失败",
+                limit=120,
+            )
+            self.logger.error(f"点击去订购按钮后未出现车主姓名输入框: {e}")
+            raise
+
+    # 点击车主姓名输入框，输入车主姓名
+    def click_store_config_name(self):
+        """点击车主姓名输入框。"""
+        self.driver.find_element(*STORE_CONFIG_NAME).send_keys("小王")
+        self.logger.info("输入车主姓名成功")
+    
+    # 点击证件号码输入框，输入证件号码
+    def click_store_config_idcard(self):
+        """点击证件号码输入框。"""
+        self.driver.find_element(*STORE_CONFIG_IDCARD).send_keys("44030419900101001X")
+        self.logger.info("输入证件号码成功")
+    
+    # 点击订购协议勾选框
+    def click_store_config_protocol_check_btn(self):
+        """点击订购协议勾选框。"""
+        self.driver.find_element(*STORE_CONFIG_PROTOCOL_CHECK_BTN).click()
+        self.logger.info("点击订购协议勾选框成功")
+        # 等待同意按钮出现
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_CONFIG_AGREE_BTN)
+        )
+        sleep(3)
+        self.driver.find_element(*STORE_CONFIG_AGREE_BTN).click()
+        self.logger.info("点击同意按钮成功")
+
+    # 点击提交订单按钮
+    def click_store_config_submit_btn(self):
+        """点击提交订单按钮。"""
+        self.driver.find_element(*STORE_CONFIG_SUBMIT_BTN).click()
+        self.logger.info("点击提交订单按钮成功")

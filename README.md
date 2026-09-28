@@ -45,6 +45,16 @@ python cli.py regression
 python -m pytest testcase_manage -v --tb=short
 ```
 
+## MCP Servers（IDE 工具集）
+
+`mcp_servers/` 目录存放独立运行的 MCP Server，通过 stdio 与 IDE 对接：
+
+- `mcp_mysql.py`：MySQL 操作（connect / list_databases / execute_query / execute_update 等 8 个工具）
+- `mcp_file_ops.py`：文件读写 + 目录列表 + 文件搜索
+- `mcp_weather.py`：示例天气查询
+
+接入方式：见 `mcp_servers/README.md` 与项目根 `.mcp.json`。
+
 ## CI（Jenkins）
 
 - 自由风格任务：Jenkins "Execute Windows batch command" → `call jenkins_build_robust.bat`

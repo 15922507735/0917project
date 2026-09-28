@@ -96,3 +96,16 @@ def build_buycar_op(driver: WebDriver, logger: Any) -> BuycarOperate:
         driver, logger,
         expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
     )
+
+
+def build_buycar_op_keep(driver: WebDriver, logger: Any) -> BuycarOperate:
+    """构造购车操作实例，不做 ensure_ready 直接复用当前页面。
+
+    用例 21 跟在用例 16~20 之后跑时，APP 已在服务 Tab，强行 ensure_ready
+    会因为"推荐 Tab 不可见"被判定为未在发现页，触发冷启动前置流程失败。
+    本函数只构造实例，不动页面状态，把"切回发现 Tab / 购物车 Tab"交给用例自行处理。
+    """
+    return BuycarOperate(
+        driver, logger,
+        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+    )
