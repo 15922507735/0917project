@@ -57,6 +57,7 @@ from object_operation.huodong_operate import HuodongOperate
 from object_operation.fatie_operate import FatieOperate
 from object_operation.fuwu_operate import FuwuOperate
 from object_operation.buycar_operate import BuycarOperate
+from object_operation.my_operate import MyOperate
 
 from page_element.login_page import (
     APP_PACKAGE,
@@ -748,4 +749,43 @@ def test_click_store_buy(driver, logger):
     logger.info("[用例21] 点击订购协议勾选框-完成")
     buycar_op.click_store_config_submit_btn()
     logger.info("[用例21] 点击提交订单按钮-完成")
+
+@pytest.mark.regression
+def test_click_ruten_btn(driver, logger):
+    """用例22：点击支付定金返回按钮。"""
+    buycar_op = _build_buycar_op_keep(driver, logger)
+    buycar_op.click_store_config_pay_btn()
+    logger.info("[用例22] 点击支付定金返回按钮-完成")
+
+@pytest.mark.regression
+def test_mypage_operate(driver, logger):
+    """用例23：我的模块操作。"""
+    my_op = MyOperate(driver, logger)
+    my_op.click_my_btn()
+    logger.info("[用例23] 点击我的按钮-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_skin(driver, logger):
+    """用例24：我的模块操作-皮肤卡片切换使用。"""
+    my_op = MyOperate(driver, logger)
+    # 点击皮肤按钮
+    my_op.click_skin_btn()
+    logger.info("[用例24] 点击皮肤按钮-完成")
+    # 点击第一个皮肤卡片（系统默认）并立即使用
+    my_op.click_skin_card_first()
+    logger.info("[用例24] 点击第一个皮肤卡片并立即使用-完成")
+    # 返回皮肤列表页面（系统返回键）
+    my_op.click_skin_back_btn()
+    logger.info("[用例24] 返回皮肤列表页面-完成")
+    # 点击第二个皮肤卡片（长安启源Q06）并立即使用
+    my_op.click_skin_card_second()
+    logger.info("[用例24] 点击第二个皮肤卡片并立即使用-完成")
+    # 返回皮肤列表页面（系统返回键）
+    my_op.click_skin_back_btn()
+    logger.info("[用例24] 返回皮肤列表页面-完成")
+    # 点击挂件入口按钮
+    my_op.click_gujian_tab_btn()
+    logger.info("[用例24] 点击挂件入口按钮-完成")
+    
+    
     
