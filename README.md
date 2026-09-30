@@ -67,3 +67,25 @@ python -m pytest testcase_manage -v --tb=short
 - `page_element/`：**只放 locator 元组**，不写业务逻辑
 - `object_operation/`：**只封装操作**（点击 / 输入 / 滑动 / 切换 context），构造方法接 `driver, logger`，不写断言
 - `testcase_manage/`：**只做流程串联 + 断言**，每个用例文件只调用 operate，不直接使用定位表达式
+
+## 用例流程索引
+
+所有用例位于 `testcase_manage/test_business_flow.py`。
+
+### 用例 23 — `test_mypage_operate`：我的模块
+
+1. 进入「我的」Tab（`MY_TAB`）
+2. 等待设置按钮出现，确认页面加载完成
+
+### 用例 24 — `test_mypage_operate_skin`：皮肤卡片切换使用
+
+1. 在「我的」页面点击皮肤按钮，进入皮肤列表页
+2. 点击**第一个**皮肤卡片（系统默认）→ 跳转到皮肤详情页
+3. 点击"立即使用"→ 显示"正在使用"
+4. 系统返回键（`driver.back()`）回到皮肤列表页
+5. 点击**第二个**皮肤卡片（长安启源Q06）→ 跳转到皮肤详情页
+6. 点击"立即使用"→ 显示"正在使用"（完成皮肤切换）
+7. 系统返回键回到皮肤列表页
+8. 点击挂件入口按钮，进入挂件 Tab
+
+> 注：一次只能有一个皮肤处于"正在使用"状态，因此切换流程必须包含"使用 → 返回 → 切换下一个"的结构。返回使用 `driver.back()` 系统返回键，避开详情页返回图标（`bar_img_back`）自身 `clickable=false` 导致的点击无效问题。
