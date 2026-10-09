@@ -140,8 +140,28 @@ MY_SIGN_SUCCESS_BTN = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/tvclose",
 )
+# 源宝
+MY_CONYB_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/conyb",
+)
+# 源宝记录（源宝记录页面标题锚点，页面中只有一个"源宝记录"文本，不能加 [2] 下标）
+MY_CONYB_RECORD = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@text='源宝记录']",
+)
+# 源宝记录页返回（采用系统返回键 driver.back()，bar_img_back 受调试横幅干扰不再使用）
 
-
+# 定级积分
+MY_CONYB_LEVEL_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/conyl",
+)
+# 定级积分记录
+MY_CONYB_LEVEL_RECORD = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@text='定级积分记录']",
+)
 
 
 

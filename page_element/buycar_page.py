@@ -144,13 +144,23 @@ STORE_CONFIG_PROTOCOL_CHECK_BTN = (
     By.XPATH,
     "//*[@id='app']/div[2]/div[1]/div[2]/div[1]/div/img",
 )
-# 提交订单按钮
+# 提交订单按钮 —— bottomBox 容器下含"提交订单"文字的 .btn 元素
+# 用 contains(., ...) 而非 contains(text(), ...)，避免文字被嵌套时漏匹配
 STORE_CONFIG_SUBMIT_BTN = (
     By.XPATH,
-    "//*[@id='app']/div[2]/div[1]/div[2]/div[2]/div/div",
+    "//div[contains(@class,'bottomBox')]//div[contains(@class,'btn') and contains(., '提交订单')]",
 )
 # 我同意按钮
 STORE_CONFIG_AGREE_BTN = (
     By.XPATH,
     "//*[@id='app']/div[2]/div/div/div[2]/div",
+)
+# 支付定金返回按钮 —— 支付订金页左上角的"返回箭头"div.btn-return
+STORE_CONFIG_PAY_BTN = (
+    By.XPATH,
+    "//div[contains(@class,'btn-return')]",
+)
+# 倒计时提示文字 
+STORE_CONFIG_PAY_TIMER = (
+By.XPATH, "//div[contains(@class,'time-wrapper')]",
 )

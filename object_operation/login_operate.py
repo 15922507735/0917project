@@ -40,9 +40,11 @@ from page_element.login_page import (
 )
 
 # ===================== 可调参数（phone / password） =====================
-# 顶部集中维护默认账号；用例/测试可通过参数覆盖
-DEFAULT_PHONE: str = "18908323900"
-DEFAULT_PASSWORD: str = "Aa123456"
+# 从 .env 读取真实账号（由 conftest.py 自动加载 python-dotenv），
+# 找不到 .env 时使用下方兜底默认值。用例/测试可通过参数覆盖。
+import os as _os
+DEFAULT_PHONE: str = _os.getenv("TEST_PHONE", "18908323900")
+DEFAULT_PASSWORD: str = _os.getenv("TEST_PASSWORD", "Aa123456")
 
 
 class LoginOperate:

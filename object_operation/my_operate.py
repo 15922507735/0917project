@@ -42,6 +42,10 @@ MY_NICKNAME_TEXT,
 MY_SIGN_BTN,
 MY_SIGN_SUCCESS_TEXT,
 MY_SIGN_SUCCESS_BTN,
+MY_CONYB_BTN,
+MY_CONYB_RECORD,
+MY_CONYB_LEVEL_BTN,
+MY_CONYB_LEVEL_RECORD,
 )
 import pytest
 import time
@@ -228,3 +232,42 @@ class MyOperate:
         # 点击好的按钮
         self.driver.find_element(*MY_SIGN_SUCCESS_BTN).click()
         self.logger.info("成功点击好的按钮")
+
+    # 点击查看源宝
+    def click_conyb_btn(self):
+        """点击查看源宝，并返回我的页面。"""
+        self.driver.find_element(*MY_CONYB_BTN).click()
+        self.logger.info("成功点击查看源宝")
+        # 页面加载完成，出现源宝记录
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_CONYB_RECORD)
+        )
+        self.logger.info("跳转到源宝记录页面-源宝记录出现")
+        # 使用系统返回键退出源宝记录页面（bar_img_back 受调试横幅干扰，clickable 不可靠）
+        self.driver.back()
+        self.logger.info("使用系统返回键退出源宝记录页面")
+        # 页面加载完成，出现昵称文本
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_NICKNAME_TEXT)
+        )
+        self.logger.info("跳转到我的页面-昵称出现")
+        
+    # 点击查看定级积分
+    def click_conyb_level_btn(self):
+        """点击查看定级积分，并返回我的页面。"""
+        self.driver.find_element(*MY_CONYB_LEVEL_BTN).click()
+        self.logger.info("成功点击查看定级积分")
+        # 页面加载完成，出现定级积分记录
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_CONYB_LEVEL_RECORD)
+        )
+        self.logger.info("跳转到定级积分记录页面-定级积分记录出现")
+        # 使用系统返回键退出定级积分记录页面（bar_img_back 受调试横幅干扰，clickable 不可靠）
+        self.driver.back()
+        self.logger.info("使用系统返回键退出定级积分记录页面")
+        # 页面加载完成，出现昵称文本
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_NICKNAME_TEXT)
+        )
+        self.logger.info("跳转到我的页面-昵称出现")
+        

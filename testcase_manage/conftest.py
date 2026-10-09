@@ -34,6 +34,16 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+# 加载项目根目录下的 .env（如果存在）—— 由 python-dotenv 提供支持
+# 加载后所有 os.getenv(...) 都能读到 .env 中的变量；找不到 .env 时跳过
+try:
+    from dotenv import load_dotenv
+    _env_path = os.path.join(PROJECT_ROOT, ".env")
+    if os.path.isfile(_env_path):
+        load_dotenv(_env_path, override=False)
+except ImportError:
+    pass
+
 from page_element.login_page import (  # noqa: E402
     AGREEMENT_BTN,
     APP_ACTIVITY,

@@ -42,6 +42,8 @@ from page_element.buycar_page import (
     STORE_CONFIG_PROTOCOL_CHECK_BTN,
     STORE_CONFIG_SUBMIT_BTN,
     STORE_CONFIG_AGREE_BTN,
+    STORE_CONFIG_PAY_BTN,
+    STORE_CONFIG_PAY_TIMER,
 )
 
 class BuycarOperate:
@@ -263,7 +265,7 @@ class BuycarOperate:
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
             EC.presence_of_element_located(STORE_CONFIG_AGREE_BTN)
         )
-        sleep(3)
+        sleep(4)
         self.driver.find_element(*STORE_CONFIG_AGREE_BTN).click()
         self.logger.info("点击同意按钮成功")
 
@@ -272,3 +274,17 @@ class BuycarOperate:
         """点击提交订单按钮。"""
         self.driver.find_element(*STORE_CONFIG_SUBMIT_BTN).click()
         self.logger.info("点击提交订单按钮成功")
+        # 跳转到支付页面，断言订单提交成功倒计时提示文字出现
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_CONFIG_PAY_TIMER)
+        )
+        self.logger.info("成功跳转到支付页面，出现倒计时提示文字")
+
+    # 点击支付定金页面的返回按钮
+    def click_store_config_pay_btn(self):
+        """点击支付定金页面的返回按钮。"""
+        self.driver.find_element(*STORE_CONFIG_PAY_BTN).click()
+        self.logger.info("点击支付定金页面的返回按钮成功")
+
+
+        

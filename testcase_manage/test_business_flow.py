@@ -818,10 +818,25 @@ def test_mypage_operate_setting_back(driver, logger):
 
 @pytest.mark.regression
 def test_mypage_operate_sign(driver, logger):
-    """用例28：我的模块操作-签到按钮。"""
+    """用例28：我的模块操作-签到操作。"""
     my_op = MyOperate(driver, logger)
     # 点击签到按钮
     my_op.click_sign_btn()
-    logger.info("[用例28] 点击签到按钮-完成")
+    logger.info("[用例28] 点击签到操作-完成")
 
-    
+@pytest.mark.regression
+def test_mypage_operate_conyb(driver, logger):
+    """用例29：我的模块操作-点击查看源宝，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击源宝按钮
+    my_op.click_conyb_btn()
+    logger.info("[用例29] 点击点击查看源宝-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_conyb_level(driver, logger):
+    """用例30：我的模块操作-点击查看定级积分，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击定级积分按钮
+    my_op.click_conyb_level_btn()
+    logger.info("[用例30] 点击点击查看定级积分-完成")
+   

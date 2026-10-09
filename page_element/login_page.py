@@ -7,14 +7,17 @@
 """
 from __future__ import annotations
 
+import os
+
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.common.by import By
 
 # ===================== 应用级常量 =====================
-# 待测 APP 包名
-APP_PACKAGE = "com.changan.oushangCos1"
+# 从 .env 读取配置（由 conftest.py 自动加载 python-dotenv），
+# 找不到 .env 时使用下方兜底默认值，保持向后兼容。
+APP_PACKAGE: str = os.getenv("APP_PACKAGE", "com.changan.oushangCos1")
 # 启动 Activity
-APP_ACTIVITY = ".DefaultAliasActivity"
+APP_ACTIVITY: str = os.getenv("APP_ACTIVITY", ".DefaultAliasActivity")
 # 允许停留的 Activity 列表（多 Activity 串行等待，逗号分隔）
 APP_WAIT_ACTIVITY = (
     f"{APP_PACKAGE}/.DefaultAliasActivity,"
@@ -24,11 +27,11 @@ APP_WAIT_ACTIVITY = (
     "com.changan.qiyuan.my.activity.QYLoginActivty"
 )
 # 设备名（默认模拟器）
-DEVICE_NAME = "emulator-5554"
+DEVICE_NAME: str = os.getenv("DEVICE_NAME", "emulator-5554")
 # Appium 2 服务地址（注意：Appium 2 已不带 /wd/hub）
-APPIUM_SERVER = "http://127.0.0.1:4723"
+APPIUM_SERVER: str = os.getenv("APPIUM_SERVER", "http://127.0.0.1:4723")
 # 全局隐式等待 / 显式等待超时（秒）
-EXPECT_WAIT_TIMEOUT = 10
+EXPECT_WAIT_TIMEOUT: int = int(os.getenv("EXPECT_WAIT_TIMEOUT", "10"))
 
 # ===================== 启动阶段元素 =====================
 # 启动时的隐私协议"同意"按钮
