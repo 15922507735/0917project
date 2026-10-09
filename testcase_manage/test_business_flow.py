@@ -786,6 +786,42 @@ def test_mypage_operate_skin(driver, logger):
     # 点击挂件入口按钮
     my_op.click_gujian_tab_btn()
     logger.info("[用例24] 点击挂件入口按钮-完成")
+@pytest.mark.regression
+def test_mypage_operate_setting(driver, logger):
+    """用例25：我的模块操作-设置按钮。"""
+    my_op = MyOperate(driver, logger)
+    # 点击设置按钮
+    my_op.click_setting_btn()
+    logger.info("[用例25] 点击设置按钮-完成")
+    # 点击个人资料
+    my_op.click_user_info()
+    logger.info("[用例25] 点击个人资料-完成")
     
-    
+@pytest.mark.regression
+def test_mypage_operate_nickname(driver, logger):
+    """用例26：我的模块操作-昵称。"""
+    my_op = MyOperate(driver, logger)
+    # 点击昵称
+    my_op.click_nickname()
+    logger.info("[用例26] 点击昵称-完成")
+    # 点击昵称输入框，清除输入框内容，输入新昵称，并保存
+    my_op.click_nickname_input()
+    logger.info("[用例26] 点击昵称输入框，清除输入框内容，输入新昵称，并保存-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_setting_back(driver, logger):
+    """用例27：我的模块操作-设置页面返回按钮。"""
+    my_op = MyOperate(driver, logger)
+    # 点击返回按钮
+    my_op.click_setting_back_btn()
+    logger.info("[用例27] 点击返回按钮-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_sign(driver, logger):
+    """用例28：我的模块操作-签到按钮。"""
+    my_op = MyOperate(driver, logger)
+    # 点击签到按钮
+    my_op.click_sign_btn()
+    logger.info("[用例28] 点击签到按钮-完成")
+
     

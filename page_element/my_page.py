@@ -75,5 +75,73 @@ MY_GUAJIAN_CARD_NO = (
     AppiumBy.XPATH,
     f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tag_name' and @text='无挂件']",
 )
+# 设置按钮
+MY_SETTING_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/iv_msgset",
+)
+# 个人资料
+MY_USER_INFO = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tvuserinfo",
+)
+# 个性签名
+MY_SIGN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@text='个性签名']",
+)
+# 基本信息-昵称
+MY_NICKNAME = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/etname",
+)
+# 修改昵称标题
+MY_NICKNAME_TITLE = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/bar_tv_title",
+)
+# 昵称输入框
+MY_NICKNAME_INPUT = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/etsign",
+)
+# 修改昵称确定按钮
+MY_NICKNAME_COMMIT_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tv_commit",
+)
+# 保存按钮
+MY_SAVE_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/bar_tv_other",
+)
+# 设置页面返回按钮
+MY_SETTING_BACK_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/bar_img_back",
+)
+# 我的页面昵称文本（用稳定的资源 id 定位，text 不固定）
+MY_NICKNAME_TEXT = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tvlogining",
+)
+# 签到按钮
+MY_SIGN_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tvsign",
+)
+# 签到成功
+MY_SIGN_SUCCESS_TEXT = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tv1",
+)
+# 好的按钮
+MY_SIGN_SUCCESS_BTN = (
+    AppiumBy.ID,
+    f"{APP_PACKAGE}:id/tvclose",
+)
+
+
+
 
 

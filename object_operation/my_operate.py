@@ -30,6 +30,18 @@ MY_GUAJIAN_BACK_BTN,
 MY_GUAJIAN_USEING_BTN,
 MY_GUAJIAN_TAB_BTN,
 MY_GUAJIAN_CARD_NO,
+MY_NICKNAME,
+MY_NICKNAME_TITLE,
+MY_USER_INFO,
+MY_SIGN,
+MY_NICKNAME_INPUT,
+MY_NICKNAME_COMMIT_BTN,
+MY_SAVE_BTN,
+MY_SETTING_BACK_BTN,
+MY_NICKNAME_TEXT,
+MY_SIGN_BTN,
+MY_SIGN_SUCCESS_TEXT,
+MY_SIGN_SUCCESS_BTN,
 )
 import pytest
 import time
@@ -138,3 +150,81 @@ class MyOperate:
             EC.presence_of_element_located(MY_SETTING_BTN)
         )
         self.logger.info("我的页面加载完成-设置按钮出现")
+
+    # 点击我的设置按钮
+    def click_setting_btn(self):
+        """点击我的设置按钮。"""
+        self.driver.find_element(*MY_SETTING_BTN).click()
+        self.logger.info("成功点击我的设置按钮")
+        # 页面加载完成，出现个人资料
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_USER_INFO)
+        )
+        self.logger.info("跳转到设置页面-个人资料出现")
+    
+    # 点击个人资料
+    def click_user_info(self):
+        """点击个人资料。"""
+        self.driver.find_element(*MY_USER_INFO).click()
+        self.logger.info("成功点击个人资料")
+        # 页面加载完成，出现个性签名
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_SIGN)
+        )
+        self.logger.info("跳转到设置页面-个性签名出现")
+    # 点击昵称
+    def click_nickname(self):
+        """点击昵称。"""
+        self.driver.find_element(*MY_NICKNAME).click()
+        self.logger.info("成功点击昵称")
+        # 页面加载完成，出现修改昵称标题
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_NICKNAME_TITLE)
+        )
+        self.logger.info("跳转到设置页面-修改昵称标题出现")
+
+    # 点击昵称输入框，清除输入框内容
+    def click_nickname_input(self):
+        """点击昵称输入框，清除输入框内容，输入新昵称，并保存。"""
+        nickname = self.driver.find_element(*MY_NICKNAME_INPUT)
+        nickname.clear()
+        nickname.send_keys("大圣")
+        self.logger.info("成功输入新昵称")
+        # 点击确定按钮
+        self.driver.find_element(*MY_NICKNAME_COMMIT_BTN).click()
+        self.logger.info("成功点击确定昵称按钮")
+        # 点击保存按钮
+        self.driver.find_element(*MY_SAVE_BTN).click()
+        self.logger.info("保存成功")
+        # 跳转到设置页面，出现个人资料
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_USER_INFO)
+        )
+        self.logger.info("跳转到设置页面-个人资料出现")
+
+    # 点击设置页面返回按钮
+    def click_setting_back_btn(self):
+        """点击设置页面返回按钮。
+        使用系统返回键（driver.back()）规避 bar_img_back 在 App 调试横条上重复出现导致错点的问题。
+        """
+        self.driver.back()
+        self.logger.info("使用系统返回键退出设置页面")
+        # 页面加载完成，出现昵称文本
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_NICKNAME_TEXT)
+        )
+        self.logger.info("跳转到我的页面-昵称出现")
+
+    # 点击签到按钮
+    def click_sign_btn(self):
+        """点击签到按钮。"""
+        self.driver.find_element(*MY_SIGN_BTN).click()
+        self.logger.info("成功点击签到按钮")
+        # 弹出签到成功弹窗，出现签到成功文本
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_SIGN_SUCCESS_TEXT)
+        )
+        self.logger.info("签到成功弹窗出现-签到成功文本出现")
+        # 点击好的按钮
+        self.driver.find_element(*MY_SIGN_SUCCESS_BTN).click()
+        self.logger.info("成功点击好的按钮")
