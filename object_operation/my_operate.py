@@ -46,6 +46,21 @@ MY_CONYB_BTN,
 MY_CONYB_RECORD,
 MY_CONYB_LEVEL_BTN,
 MY_CONYB_LEVEL_RECORD,
+MY_ORDER_BTN,
+MY_ORDER_RECORD,
+MY_ORDER_RECORD_MALL,
+MY_ORDER_FIRST_ITEM,
+MY_ORDER_DETAIL,
+MY_ORDER_DETAIL_BACK_BTN,
+MY_SHOP_BTN,
+MY_QRCODE,
+MY_SHOP_BACK_BTN,
+MY_CROSS_CITY_ACTIVITY,
+MY_CROSS_CITY_TITLE,
+MY_CROSS_CITY_NAV_BRAND,
+MY_CROSS_CITY_MONDAY,
+MY_CROSS_CITY_BACK_BTN,
+
 )
 import pytest
 import time
@@ -270,4 +285,152 @@ class MyOperate:
             EC.presence_of_element_located(MY_NICKNAME_TEXT)
         )
         self.logger.info("跳转到我的页面-昵称出现")
+        
+    # 点击我的订单
+    def click_order_btn(self):
+        """点击我的订单。"""
+        self.driver.find_element(*MY_ORDER_BTN).click()
+        self.logger.info("成功点击我的订单")
+        # 页面加载完成，出现订车订单
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_ORDER_RECORD)
+        )
+        self.logger.info("我的订单列表-订车订单出现")
+        # 点击订车订单
+        self.driver.find_element(*MY_ORDER_RECORD).click()
+        self.logger.info("成功点击订车订单")
+        # 切换到webview（复用 WebViewOperate 的 context 切换与 chromedriver 匹配逻辑）
+        self.webview_operate.switch_to_webview()
+        self.logger.info("成功切换到webview")
+        # 打印url+title
+        try:
+            self.logger.info(
+                f"WebView 已激活, url={self.driver.current_url}, "
+                f"title={self.driver.title}"
+            )
+        except Exception as e:
+            self.logger.warning(f"读取 WebView url/title 失败（不影响切 context）: {e}")
+        # 等待订单列表加载完成后点击第一个订单
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_ORDER_FIRST_ITEM)
+        )
+        self.driver.find_element(*MY_ORDER_FIRST_ITEM).click()
+        self.logger.info("成功点击第一个订单")
+        # 页面加载完成，出现订单详情
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_ORDER_DETAIL)
+        )
+        self.logger.info("订单详情-订单详情出现")
+        # 点击页面顶部返回按钮2次：第一次返回订单列表，第二次返回我的页面
+        self.driver.find_element(*MY_ORDER_DETAIL_BACK_BTN).click()
+        self.logger.info("成功点击返回按钮第1次")
+        # 等待返回到订单列表页
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_ORDER_FIRST_ITEM)
+        )
+        self.driver.find_element(*MY_ORDER_DETAIL_BACK_BTN).click()
+        self.logger.info("成功点击返回按钮第2次")
+        # 切换回native context
+        self.webview_operate.switch_to_native()
+        self.logger.info("成功切换回native context")
+        # 页面加载完成，出现订车订单
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_ORDER_RECORD)
+        )
+        self.logger.info("跳转到我的页面-订车订单出现")
+        # 系统返回到我的页面
+        self.driver.back()
+        self.logger.info("使用系统返回键退出我的订单页面")
+        # 页面加载完成，出现设置按钮
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_SETTING_BTN)
+        )
+        self.logger.info("跳转到我的页面-设置出现")
+
+    # 点击车主店铺
+    def click_shop_btn(self):
+        """点击进入车主店铺，并返回到我的页面。"""
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(MY_SHOP_BTN)
+        ).click()
+        self.logger.info("成功点击车主店铺")
+        # 切换到webview（复用 WebViewOperate 的 context 切换与 chromedriver 匹配逻辑）
+        self.webview_operate.switch_to_webview()
+        self.logger.info("成功切换到webview")
+        # 打印url+title
+        try:
+            self.logger.info(
+                f"WebView 已激活, url={self.driver.current_url}, "
+                f"title={self.driver.title}"
+            )
+        except Exception as e:
+            self.logger.warning(f"读取 WebView url/title 失败（不影响切 context）: {e}")
+
+        # 页面加载完成，出现个人二维码
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_QRCODE)
+        )
+        self.logger.info("个人二维码-个人二维码出现")
+        # 点击车主店铺返回按钮
+        self.driver.find_element(*MY_SHOP_BACK_BTN).click()
+        self.logger.info("成功点击车主店铺返回按钮")
+        # 切换回native context
+        self.webview_operate.switch_to_native()
+        self.logger.info("成功切换回native context")
+        # 页面加载完成，出现设置按钮
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_SETTING_BTN)
+        )
+        self.logger.info("跳转到我的页面-设置出现")
+
+    # 点击同城活动
+    def click_cross_city_activity(self):
+        """点击进入同城活动，并返回到我的页面。"""
+        # 等待原生页面上的同城活动入口出现（NATIVE_APP context）
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(MY_CROSS_CITY_ACTIVITY)
+        )
+        self.logger.info("同城活动入口出现")
+        # 点击同城活动
+        self.driver.find_element(*MY_CROSS_CITY_ACTIVITY).click()
+        self.logger.info("成功点击同城活动")
+        # 切换到webview（复用 WebViewOperate 的 context 切换与 chromedriver 匹配逻辑）
+        self.webview_operate.switch_to_webview()
+        self.logger.info("成功切换到webview")
+        # 打印url+title
+        try:
+            self.logger.info(
+                f"WebView 已激活, url={self.driver.current_url}, "
+                f"title={self.driver.title}"
+            )
+        except Exception as e:
+            self.logger.warning(f"读取 WebView url/title 失败（不影响切 context）: {e}")
+        # 等待 WebView 页面 title 出现
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_CROSS_CITY_TITLE)
+        )
+        self.logger.info("出现同城活动页面title")
+        # 点击精彩日程
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(MY_CROSS_CITY_NAV_BRAND)
+        ).click()
+        self.logger.info("成功点击精彩日程")
+        # 页面加载完成，出现星期一元素
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_CROSS_CITY_MONDAY)
+        )
+        self.logger.info("出现星期一元素")
+        # 点击同城活动返回按钮
+        self.driver.find_element(*MY_CROSS_CITY_BACK_BTN).click()
+        self.logger.info("成功点击同城活动返回按钮")
+        # 切换回native context
+        self.webview_operate.switch_to_native()
+        self.logger.info("成功切换回native context")
+        # 页面加载完成，出现设置按钮
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_SETTING_BTN)
+        )
+        self.logger.info("跳转到我的页面-设置出现")
+
+        
         

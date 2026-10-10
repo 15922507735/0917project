@@ -840,3 +840,26 @@ def test_mypage_operate_conyb_level(driver, logger):
     my_op.click_conyb_level_btn()
     logger.info("[用例30] 点击点击查看定级积分-完成")
    
+@pytest.mark.regression
+def test_mypage_operate_order(driver, logger):
+    """用例31：我的模块操作-点击查看我的订单，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击我的订单按钮
+    my_op.click_order_btn()
+    logger.info("[用例31] 点击点击查看我的订单-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_shop(driver, logger):
+    """用例32：我的模块操作-点击查看车主店铺，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击车主店铺按钮
+    my_op.click_shop_btn()
+    logger.info("[用例32] 点击点击查看车主店铺-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_cross_city(driver, logger):
+    """用例33：我的模块操作-点击查看同城活动，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击同城活动按钮
+    my_op.click_cross_city_activity()
+    logger.info("[用例33] 点击点击查看同城活动-完成")

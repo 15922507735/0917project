@@ -162,6 +162,72 @@ MY_CONYB_LEVEL_RECORD = (
     AppiumBy.XPATH,
     f"//android.widget.TextView[@text='定级积分记录']",
 )
-
-
-
+# 我的订单
+MY_ORDER_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_name' and @text='我的订单']",
+)
+# 订车订单
+MY_ORDER_RECORD = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tvorder' and @text='订车订单']",
+)
+# 车主商城订单
+MY_ORDER_RECORD_MALL = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tvorder' and @text='车主商城订单']",
+)
+# 积分商城订单
+MY_ORDER_RECORD_MALL = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tvorder' and @text='积分商城订单']",
+)
+# 第一个订单（find_element 返回第一个匹配，无需 nth-child）
+MY_ORDER_FIRST_ITEM = (
+    By.CSS_SELECTOR, ".listbox"
+)
+# 订单详情
+MY_ORDER_DETAIL = (
+    AppiumBy.XPATH,
+    f"//*[@id='headerBox']/div[4]/div[2]",
+)
+# 订单详情返回按钮
+MY_ORDER_DETAIL_BACK_BTN = (
+    AppiumBy.XPATH,
+    f"//*[@id='headerBox']/div[4]/div[1]",
+)
+# 车主店铺
+MY_SHOP_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_name' and @text='车主店铺']",
+)
+# 个人二维码元素
+MY_QRCODE = (
+    AppiumBy.XPATH,
+    f"//*[@id='app']/div[2]/div/div[3]/div/div[4]/div[1]/span",
+)
+# 车主店铺返回按钮
+MY_SHOP_BACK_BTN = (
+    AppiumBy.XPATH,
+    f"//*[@id='app']/div[2]/div/div[2]/div[1]",
+)
+# 同城活动
+MY_CROSS_CITY_ACTIVITY = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_name' and @text='同城活动']",
+)
+# 同城活动页面title
+MY_CROSS_CITY_TITLE = (
+    By.CSS_SELECTOR, ".title" 
+)
+# 精彩日程
+MY_CROSS_CITY_NAV_BRAND = (
+    By.XPATH, "//div[contains(@class,'name') and contains(text(),'精彩日程')]"
+)
+# 星期一元素（日历表头）
+MY_CROSS_CITY_MONDAY = (
+    By.XPATH, "//*[contains(text(),'星期一')]"
+)
+# 同城活动返回按钮
+MY_CROSS_CITY_BACK_BTN = (
+    By.CSS_SELECTOR, "#customHeader .go-back" )
