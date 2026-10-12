@@ -327,4 +327,55 @@ def is_logged_in_session(driver, logger) -> bool:
         logger.info("[is_logged_in_session] APP 不在发现页 → 未登录")
     return on_discover
 
+
+# ===================== 4. 用例级自动前后置 fixture（autouse） =====================
+@pytest.fixture(autouse=True)
+def case_level_guard(driver, logger):
+    """function 级自动 fixture：每个用例前/后做轻量状态清理与恢复。
+
+    设计目标（不侵入业务逻辑，只做兜底）：
+    - setup：关闭 ANR / 崩溃弹窗（避免中途弹窗导致用例假失败）；
+    - teardown：
+      * 若 driver 残留在 WebView context，强制切回 NATIVE_APP
+        （防止下个用例 find_element 报 invalid locator）；
+      * 若当前包名不在 APP 内（闪退 / 被弹桌面），调用 activate_app 热重启；
+      * 出错不抛异常，只记 warning，避免 teardown 失败掩盖真实用例失败。
+    """
+    # ---------- setup ----------
+    try:
+        _close_anr_if_exists(driver, logger)
+    except Exception as e:
+        logger.warning(f"[case_guard] setup 关闭 ANR 失败（忽略）: {e}")
+
+    yield
+
+    # ---------- teardown ----------
+    # 1. 强制切回 NATIVE_APP（若当前在 WebView）
+    try:
+        current_ctx = getattr(driver, "current_context", None)
+        if current_ctx and current_ctx != "NATIVE_APP":
+            logger.warning(
+                f"[case_guard] teardown 检测到 WebView 残留: {current_ctx}，强制切回 NATIVE_APP"
+            )
+            try:
+                driver.switch_to.context("NATIVE_APP")
+            except Exception as e:
+                logger.warning(f"[case_guard] 切回 NATIVE_APP 失败（忽略）: {e}")
+    except Exception as e:
+        logger.warning(f"[case_guard] 探测 current_context 失败（忽略）: {e}")
+
+    # 2. 若不在 APP 包内，热重启 APP
+    try:
+        current_pkg = driver.current_package
+        if current_pkg != APP_PACKAGE:
+            logger.warning(
+                f"[case_guard] teardown 检测到包名漂移: {current_pkg}，尝试热重启 APP"
+            )
+            try:
+                driver.activate_app(APP_PACKAGE)
+            except Exception as e:
+                logger.warning(f"[case_guard] 热重启 APP 失败（忽略）: {e}")
+    except Exception as e:
+        logger.warning(f"[case_guard] 探测 current_package 失败（忽略）: {e}")
+
     
