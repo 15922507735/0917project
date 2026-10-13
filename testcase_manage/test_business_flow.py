@@ -695,171 +695,189 @@ def test_click_store_charge(driver, logger):
     logger.info("[用例20] 点击家充桩智享返回按钮-完成")
 
 
-# ===================== 用例 21：购车模块操作 =====================
+@pytest.mark.regression
+def test_mypage_operate(driver, logger):
+    """用例21：我的模块操作。"""
+    my_op = MyOperate(driver, logger)
+    my_op.click_my_btn()
+    logger.info("[用例21] 点击我的按钮-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_skin(driver, logger):
+    """用例22：我的模块操作-皮肤卡片切换使用。"""
+    my_op = MyOperate(driver, logger)
+    # 点击皮肤按钮
+    my_op.click_skin_btn()
+    logger.info("[用例22] 点击皮肤按钮-完成")
+    # 点击第一个皮肤卡片（系统默认）并立即使用
+    my_op.click_skin_card_first()
+    logger.info("[用例22] 点击第一个皮肤卡片并立即使用-完成")
+    # 返回皮肤列表页面（系统返回键）
+    my_op.click_skin_back_btn()
+    logger.info("[用例22] 返回皮肤列表页面-完成")
+    # 点击第二个皮肤卡片（长安启源Q06）并立即使用
+    my_op.click_skin_card_second()
+    logger.info("[用例22] 点击第二个皮肤卡片并立即使用-完成")
+    # 返回皮肤列表页面（系统返回键）
+    my_op.click_skin_back_btn()
+    logger.info("[用例22] 返回皮肤列表页面-完成")
+    # 点击挂件入口按钮
+    my_op.click_gujian_tab_btn()
+    logger.info("[用例22] 点击挂件入口按钮-完成")
+@pytest.mark.regression
+def test_mypage_operate_setting(driver, logger):
+    """用例23：我的模块操作-设置按钮。"""
+    my_op = MyOperate(driver, logger)
+    # 点击设置按钮
+    my_op.click_setting_btn()
+    logger.info("[用例23] 点击设置按钮-完成")
+    # 点击个人资料
+    my_op.click_user_info()
+    logger.info("[用例23] 点击个人资料-完成")
+    
+@pytest.mark.regression
+def test_mypage_operate_nickname(driver, logger):
+    """用例24：我的模块操作-昵称。"""
+    my_op = MyOperate(driver, logger)
+    # 点击昵称
+    my_op.click_nickname()
+    logger.info("[用例24] 点击昵称-完成")
+    # 点击昵称输入框，清除输入框内容，输入新昵称，并保存
+    my_op.click_nickname_input()
+    logger.info("[用例24] 点击昵称输入框，清除输入框内容，输入新昵称，并保存-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_setting_back(driver, logger):
+    """用例25：我的模块操作-设置页面返回按钮。"""
+    my_op = MyOperate(driver, logger)
+    # 点击返回按钮
+    my_op.click_setting_back_btn()
+    logger.info("[用例25] 点击返回按钮-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_sign(driver, logger):
+    """用例26：我的模块操作-签到操作。"""
+    my_op = MyOperate(driver, logger)
+    # 点击签到按钮
+    my_op.click_sign_btn()
+    logger.info("[用例26] 点击签到操作-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_conyb(driver, logger):
+    """用例27：我的模块操作-点击查看源宝，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击源宝按钮
+    my_op.click_conyb_btn()
+    logger.info("[用例27] 点击点击查看源宝-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_conyb_level(driver, logger):
+    """用例28：我的模块操作-点击查看定级积分，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击定级积分按钮
+    my_op.click_conyb_level_btn()
+    logger.info("[用例28] 点击点击查看定级积分-完成")
+   
+@pytest.mark.regression
+def test_mypage_operate_order(driver, logger):
+    """用例29：我的模块操作-点击查看我的订单，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击我的订单按钮
+    my_op.click_order_btn()
+    logger.info("[用例29] 点击点击查看我的订单-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_shop(driver, logger):
+    """用例30：我的模块操作-点击查看车主店铺，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击车主店铺按钮
+    my_op.click_shop_btn()
+    logger.info("[用例30] 点击点击查看车主店铺-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_cross_city(driver, logger):
+    """用例31：我的模块操作-点击查看同城活动，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击同城活动按钮
+    my_op.click_cross_city_activity()
+    logger.info("[用例31] 点击点击查看同城活动-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_card(driver, logger):
+    """用例32：我的模块操作-点击查看我的卡券，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击我的卡券按钮
+    my_op.click_card_btn()
+    logger.info("[用例32] 点击点击查看我的卡券-完成")
+
+@pytest.mark.regression
+def test_mypage_operate_online_evaluation(driver, logger):
+    """用例33：我的模块操作-点击查看在线评价，并返回我的页面。"""
+    my_op = MyOperate(driver, logger)
+    # 点击在线评价按钮
+    my_op.click_online_evaluation()
+    logger.info("[用例33] 点击点击查看在线评价-完成")
+
+
+# ===================== 用例 34：购车模块操作（置于最后执行） =====================
 # _build_buycar_op / _build_buycar_op_keep 已提取至 utils/test_helpers.py
 
 
 @pytest.mark.regression
 def test_click_store_buy(driver, logger):
 
-    """用例21：购车模块操作。
+    """用例34：购车模块操作。
 
-    注意：本用例不复用 _ensure_ready。上一用例（用例15/16~20）跑完停在服务 Tab，
+    注意：本用例不复用 _ensure_ready。上一用例（用例33）跑完停在「我的」页面，
     此时 _ensure_ready 会因为"推荐 Tab 不可见"误判为未在发现页，触发冷启动失败。
     使用 _build_buycar_op_keep 跳过 ensure_ready 直接复用当前页面状态，
     由本用例开头手动切回「发现」首页。
     """
-    # 1) 切回「发现」Tab（用例 20 跑完停在服务 Tab）
+    # 1) 切回「发现」Tab（用例 33 跑完停在「我的」页面）
     login_op, first_page_op = _build_ops(driver, logger)
     first_page_op.click_discover_tab()
 
     # 2) 构造购车操作实例（不带 ensure_ready）
     buycar_op = _build_buycar_op_keep(driver, logger)
     buycar_op.click_store_buy_btn()
-    logger.info("[用例21] 点击购车tab按钮-完成")
+    logger.info("[用例34] 点击购车tab按钮-完成")
     buycar_op.click_store_order_btn()
-    logger.info("[用例21] 点击立即订购按钮-完成")
+    logger.info("[用例34] 点击立即订购按钮-完成")
     buycar_op.click_store_config_version_btn()
-    logger.info("[用例21] 点击去选择车型版本-完成")
+    logger.info("[用例34] 点击去选择车型版本-完成")
     buycar_op.click_store_config_next_btn()
-    logger.info("[用例21] 点击外观 -> 下一步-完成")
+    logger.info("[用例34] 点击外观 -> 下一步-完成")
     buycar_op.click_store_config_ext_color_btn()
-    logger.info("[用例21] 点击外观颜色卡片-完成")
+    logger.info("[用例34] 点击外观颜色卡片-完成")
     buycar_op.click_store_config_interior_next_btn()
-    logger.info("[用例21] 点击内饰按钮到下一步-完成")
+    logger.info("[用例34] 点击内饰按钮到下一步-完成")
     buycar_op.click_store_config_interior_color_btn()
-    logger.info("[用例21] 点击内饰颜色卡片-完成")
+    logger.info("[用例34] 点击内饰颜色卡片-完成")
     buycar_op.click_store_config_ext_next_btn()
-    logger.info("[用例21] 点击选装按钮到下一步-完成")
+    logger.info("[用例34] 点击选装按钮到下一步-完成")
     buycar_op.click_store_config_think_btn()
-    logger.info("[用例21] 点击添加选装按钮-完成")
+    logger.info("[用例34] 点击添加选装按钮-完成")
     buycar_op.click_store_config_order_next_btn()
-    logger.info("[用例21] 点击订单中心下一步按钮-完成")
+    logger.info("[用例34] 点击订单中心下一步按钮-完成")
     buycar_op.click_store_config_order_check_btn()
-    logger.info("[用例21] 点击订单中心勾选按钮-完成")
+    logger.info("[用例34] 点击订单中心勾选按钮-完成")
     buycar_op.click_store_config_complete_btn()
-    logger.info("[用例21] 点击完成配置按钮-完成")
+    logger.info("[用例34] 点击完成配置按钮-完成")
     buycar_op.click_store_config_order_btn()
-    logger.info("[用例21] 点击去订购按钮-完成")
+    logger.info("[用例34] 点击去订购按钮-完成")
     buycar_op.click_store_config_name()
-    logger.info("[用例21] 点击车主姓名输入框-完成")
+    logger.info("[用例34] 点击车主姓名输入框-完成")
     buycar_op.click_store_config_idcard()
-    logger.info("[用例21] 点击证件号码输入框-完成")
+    logger.info("[用例34] 点击证件号码输入框-完成")
     buycar_op.click_store_config_protocol_check_btn()
-    logger.info("[用例21] 点击订购协议勾选框-完成")
+    logger.info("[用例34] 点击订购协议勾选框-完成")
     buycar_op.click_store_config_submit_btn()
-    logger.info("[用例21] 点击提交订单按钮-完成")
+    logger.info("[用例34] 点击提交订单按钮-完成")
+
 
 @pytest.mark.regression
 def test_click_ruten_btn(driver, logger):
-    """用例22：点击支付定金返回按钮。"""
+    """用例35：点击支付定金返回按钮。"""
     buycar_op = _build_buycar_op_keep(driver, logger)
     buycar_op.click_store_config_pay_btn()
-    logger.info("[用例22] 点击支付定金返回按钮-完成")
-
-@pytest.mark.regression
-def test_mypage_operate(driver, logger):
-    """用例23：我的模块操作。"""
-    my_op = MyOperate(driver, logger)
-    my_op.click_my_btn()
-    logger.info("[用例23] 点击我的按钮-完成")
-
-@pytest.mark.regression
-def test_mypage_operate_skin(driver, logger):
-    """用例24：我的模块操作-皮肤卡片切换使用。"""
-    my_op = MyOperate(driver, logger)
-    # 点击皮肤按钮
-    my_op.click_skin_btn()
-    logger.info("[用例24] 点击皮肤按钮-完成")
-    # 点击第一个皮肤卡片（系统默认）并立即使用
-    my_op.click_skin_card_first()
-    logger.info("[用例24] 点击第一个皮肤卡片并立即使用-完成")
-    # 返回皮肤列表页面（系统返回键）
-    my_op.click_skin_back_btn()
-    logger.info("[用例24] 返回皮肤列表页面-完成")
-    # 点击第二个皮肤卡片（长安启源Q06）并立即使用
-    my_op.click_skin_card_second()
-    logger.info("[用例24] 点击第二个皮肤卡片并立即使用-完成")
-    # 返回皮肤列表页面（系统返回键）
-    my_op.click_skin_back_btn()
-    logger.info("[用例24] 返回皮肤列表页面-完成")
-    # 点击挂件入口按钮
-    my_op.click_gujian_tab_btn()
-    logger.info("[用例24] 点击挂件入口按钮-完成")
-@pytest.mark.regression
-def test_mypage_operate_setting(driver, logger):
-    """用例25：我的模块操作-设置按钮。"""
-    my_op = MyOperate(driver, logger)
-    # 点击设置按钮
-    my_op.click_setting_btn()
-    logger.info("[用例25] 点击设置按钮-完成")
-    # 点击个人资料
-    my_op.click_user_info()
-    logger.info("[用例25] 点击个人资料-完成")
-    
-@pytest.mark.regression
-def test_mypage_operate_nickname(driver, logger):
-    """用例26：我的模块操作-昵称。"""
-    my_op = MyOperate(driver, logger)
-    # 点击昵称
-    my_op.click_nickname()
-    logger.info("[用例26] 点击昵称-完成")
-    # 点击昵称输入框，清除输入框内容，输入新昵称，并保存
-    my_op.click_nickname_input()
-    logger.info("[用例26] 点击昵称输入框，清除输入框内容，输入新昵称，并保存-完成")
-
-@pytest.mark.regression
-def test_mypage_operate_setting_back(driver, logger):
-    """用例27：我的模块操作-设置页面返回按钮。"""
-    my_op = MyOperate(driver, logger)
-    # 点击返回按钮
-    my_op.click_setting_back_btn()
-    logger.info("[用例27] 点击返回按钮-完成")
-
-@pytest.mark.regression
-def test_mypage_operate_sign(driver, logger):
-    """用例28：我的模块操作-签到操作。"""
-    my_op = MyOperate(driver, logger)
-    # 点击签到按钮
-    my_op.click_sign_btn()
-    logger.info("[用例28] 点击签到操作-完成")
-
-@pytest.mark.regression
-def test_mypage_operate_conyb(driver, logger):
-    """用例29：我的模块操作-点击查看源宝，并返回我的页面。"""
-    my_op = MyOperate(driver, logger)
-    # 点击源宝按钮
-    my_op.click_conyb_btn()
-    logger.info("[用例29] 点击点击查看源宝-完成")
-
-@pytest.mark.regression
-def test_mypage_operate_conyb_level(driver, logger):
-    """用例30：我的模块操作-点击查看定级积分，并返回我的页面。"""
-    my_op = MyOperate(driver, logger)
-    # 点击定级积分按钮
-    my_op.click_conyb_level_btn()
-    logger.info("[用例30] 点击点击查看定级积分-完成")
-   
-@pytest.mark.regression
-def test_mypage_operate_order(driver, logger):
-    """用例31：我的模块操作-点击查看我的订单，并返回我的页面。"""
-    my_op = MyOperate(driver, logger)
-    # 点击我的订单按钮
-    my_op.click_order_btn()
-    logger.info("[用例31] 点击点击查看我的订单-完成")
-
-@pytest.mark.regression
-def test_mypage_operate_shop(driver, logger):
-    """用例32：我的模块操作-点击查看车主店铺，并返回我的页面。"""
-    my_op = MyOperate(driver, logger)
-    # 点击车主店铺按钮
-    my_op.click_shop_btn()
-    logger.info("[用例32] 点击点击查看车主店铺-完成")
-
-@pytest.mark.regression
-def test_mypage_operate_cross_city(driver, logger):
-    """用例33：我的模块操作-点击查看同城活动，并返回我的页面。"""
-    my_op = MyOperate(driver, logger)
-    # 点击同城活动按钮
-    my_op.click_cross_city_activity()
-    logger.info("[用例33] 点击点击查看同城活动-完成")
+    logger.info("[用例35] 点击支付定金返回按钮-完成")

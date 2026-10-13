@@ -231,3 +231,21 @@ MY_CROSS_CITY_MONDAY = (
 # 同城活动返回按钮
 MY_CROSS_CITY_BACK_BTN = (
     By.CSS_SELECTOR, "#customHeader .go-back" )
+# 我的卡券
+MY_CARD_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_name' and @text='我的卡券']",
+)
+# 未使用
+MY_CARD_UNUSED = (
+    AppiumBy.XPATH,
+    f"//*[@id='m-tabs-0-0']",)
+# 在线评价
+MY_ONLINE_EVALUATION = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_name' and @text='在线评价']",
+)
+# 待评价
+MY_PENDING_EVALUATION = (
+    AppiumBy.XPATH,
+    f"//android.view.View[@text='待评价']",)

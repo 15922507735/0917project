@@ -60,7 +60,10 @@ MY_CROSS_CITY_TITLE,
 MY_CROSS_CITY_NAV_BRAND,
 MY_CROSS_CITY_MONDAY,
 MY_CROSS_CITY_BACK_BTN,
-
+MY_CARD_BTN,
+MY_CARD_UNUSED,
+MY_ONLINE_EVALUATION,
+MY_PENDING_EVALUATION,
 )
 import pytest
 import time
@@ -432,5 +435,57 @@ class MyOperate:
         )
         self.logger.info("跳转到我的页面-设置出现")
 
-        
-        
+    # 点击我的卡券
+    def click_card_btn(self):
+        """点击我的卡券，并返回到我的页面。"""
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(MY_CARD_BTN)
+        ).click()
+        self.logger.info("成功点击我的卡券")
+        # 切换到webview（复用 WebViewOperate 的 context 切换与 chromedriver 匹配逻辑）
+        self.webview_operate.switch_to_webview()
+        self.logger.info("成功切换到webview")
+        try:
+            self.logger.info(
+                f"WebView 已激活, url={self.driver.current_url}, "
+                f"title={self.driver.title}"
+            )
+        except Exception as e:
+            self.logger.warning(f"读取 WebView url/title 失败（不影响切 context）: {e}")
+        # 等待 WebView 页面 未使用元素出现
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_CARD_UNUSED)
+        )
+        self.logger.info("出现未使用卡券元素")
+        # 先切回 native context，再用系统返回键回到我的页面
+        # （WebView 内 driver.back() 是浏览器历史回退，不一定能退出 WebView 回到原生页）
+        self.webview_operate.switch_to_native()
+        self.logger.info("成功切换回native context")
+        self.driver.back()
+        self.logger.info("成功返回我的页面")
+        # 页面加载完成，出现设置按钮
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_SETTING_BTN)
+        )
+        self.logger.info("跳转到我的页面-设置出现")
+
+    # 点击在线评价
+    def click_online_evaluation(self):
+        """点击在线评价，并返回到我的页面。"""
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.element_to_be_clickable(MY_ONLINE_EVALUATION)
+        ).click()
+        self.logger.info("成功点击在线评价")
+        # 等待页面待评价元素出现
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_PENDING_EVALUATION)
+        )
+        self.logger.info("出现待评价元素")
+        # 返回我的页面
+        self.driver.back()
+        self.logger.info("成功返回我的页面")
+        # 页面加载完成，出现设置按钮
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(MY_SETTING_BTN)
+        )
+        self.logger.info("跳转到我的页面-设置出现")
