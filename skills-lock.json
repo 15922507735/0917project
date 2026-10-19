@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "android-device-automation": {
+      "source": "web-infra-dev/midscene-skills",
+      "sourceType": "github",
+      "skillPath": "skills/android-automation/SKILL.md",
+      "computedHash": "b9600d4bc68dc3323bd2a6123d23797b729f588fdbcee03bd2c8809e89bf6079"
+    }
+  }
+}

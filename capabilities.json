@@ -1,0 +1,10 @@
+{
+  "android": {
+    "appium:appPackage": "com.changan.oushangCos1",
+    "appium:appActivity": ".DefaultAliasActivity",
+    "appium:deviceName": "emulator-5554",
+    "appium:automationName": "UiAutomator2",
+    "appium:platformVersion": "9",
+    "appium:udid": "emulator-5554"
+  }
+}
