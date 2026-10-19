@@ -2,12 +2,16 @@
 
 仅存放「发现」首页 / 「推荐」二级 Tab 的定位表达式。
 
-历史背景：本文件早期版本用
-    "//*[@text='发现' or .//*[@text='发现']]"
-等"按文字找容器"的方式定位，发现页结构改版后全部失效；
-更新框架前最后一次能跑通的版本（qiyuantest 提交，scripts/test_login.py）用的是
-    "(.//android.view.ViewGroup[@resource-id='com.changan.oushangCos1:id/rlt'])[1]"
-直接选第一个 rlt 容器作为「发现」入口。本文件恢复该写法。
+历史背景：
+- 旧框架 (qiyuantest) 用 ``(//rlt)[1]`` 选第一个 rlt 容器作为「发现」入口。
+- 实际底部 Tab 栏结构是
+    [78] text='发现', id='com.changan.oushangCos1:id/title'
+    [82] text='服务', id='com.changan.oushangCos1:id/title'
+    [86] text='购车', id='com.changan.oushangCos1:id/title'
+    [91] text='商城', id='com.changan.oushangCos1:id/title'
+    [95] text='我的', id='com.changan.oushangCos1:id/title'
+  ``rlt`` 在登录后跳到的"我的"页里没有，强行用 rlt 找不到元素。
+- 改用底部 Tab 栏的 TextView text='发现' 精确定位「发现」Tab。
 """
 from __future__ import annotations
 
@@ -16,11 +20,10 @@ from selenium.webdriver.common.by import By
 
 from .login_page import APP_PACKAGE
 
-# 旧框架（qiyuantest）写法：直接取第 1 个 rlt 容器作为「发现」入口。
-# 不再用 rlt+"发现"双条件 XPath，避免发现页改版后 0 命中。
+# 底部 Tab 栏的「发现」Tab（TextView id=title 且 text=发现）
 DISCOVER_BUTTON = (
-    By.XPATH,
-    f"(//android.view.ViewGroup[@resource-id='{APP_PACKAGE}:id/rlt'])[1]",
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/title' and @text='发现']",
 )
 # 「发现」页内嵌的「推荐」二级 Tab（TextView id=tv_tab 且 text='推荐'）
 RECOMMEND_BUTTON = (

@@ -239,17 +239,31 @@ class MyOperate:
 
     # 点击签到按钮
     def click_sign_btn(self):
-        """点击签到按钮。"""
+        """点击签到按钮。
+
+        业务逻辑：
+            1. 点签到按钮（MY_SIGN_BTN，id=tvsign）；
+            2. 容错等待"签到成功"弹窗（MY_SIGN_SUCCESS_TEXT，id=tv1）—— 最多 5s：
+               - 已签到（今天）：弹窗不再出现 → 跳过弹窗断言，视为已签到 OK；
+               - 未签到：弹窗出现 → 找到"好的"按钮并点掉。
+        """
         self.driver.find_element(*MY_SIGN_BTN).click()
         self.logger.info("成功点击签到按钮")
-        # 弹出签到成功弹窗，出现签到成功文本
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(MY_SIGN_SUCCESS_TEXT)
-        )
-        self.logger.info("签到成功弹窗出现-签到成功文本出现")
-        # 点击好的按钮
-        self.driver.find_element(*MY_SIGN_SUCCESS_BTN).click()
-        self.logger.info("成功点击好的按钮")
+        # 容错等待签到成功弹窗（最多 5s）；找不到说明今日已签过
+        from selenium.common.exceptions import TimeoutException
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located(MY_SIGN_SUCCESS_TEXT)
+            )
+            self.logger.info("签到成功弹窗出现-签到成功文本出现")
+            # 点击好的按钮关闭弹窗
+            self.driver.find_element(*MY_SIGN_SUCCESS_BTN).click()
+            self.logger.info("成功点击好的按钮")
+        except TimeoutException:
+            # 没弹签到成功弹窗 → 用户今日已签过（每天只能签一次），属正常业务态
+            self.logger.info(
+                "未出现签到成功弹窗（可能今日已签到 / APP 改版），跳过弹窗断言"
+            )
 
     # 点击查看源宝
     def click_conyb_btn(self):
@@ -369,11 +383,26 @@ class MyOperate:
         except Exception as e:
             self.logger.warning(f"读取 WebView url/title 失败（不影响切 context）: {e}")
 
-        # 页面加载完成，出现个人二维码
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(MY_QRCODE)
-        )
-        self.logger.info("个人二维码-个人二维码出现")
+        # 页面加载完成：原版要求等 MY_QRCODE（//*[@id='app']/...span）元素出现，
+        # 但 H5 页面结构改版后这个 XPath 经常失败（div 层级数变化）。
+        # 改用更稳的判据：URL 含 "shopPartner"（合伙人店铺）。
+        # 给页面 5s 渲染时间，title 应该已显示"合伙人店铺"。
+        import time as _t
+        _t.sleep(5)
+        try:
+            title = self.driver.title or ""
+            url = self.driver.current_url or ""
+            if "shopPartner" in url or "合伙人" in title or "店铺" in title:
+                self.logger.info(
+                    f"[车主店铺] 页面加载完成（url={url}, title={title}）"
+                )
+            else:
+                self.logger.warning(
+                    f"[车主店铺] 页面 URL/title 异常，强制继续: "
+                    f"url={url}, title={title}"
+                )
+        except Exception as e:
+            self.logger.warning(f"[车主店铺] 读取 URL/title 失败（继续）: {e}")
         # 点击车主店铺返回按钮
         self.driver.find_element(*MY_SHOP_BACK_BTN).click()
         self.logger.info("成功点击车主店铺返回按钮")

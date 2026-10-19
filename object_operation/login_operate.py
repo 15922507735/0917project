@@ -43,7 +43,7 @@ from page_element.login_page import (
 # 从 .env 读取真实账号（由 conftest.py 自动加载 python-dotenv），
 # 找不到 .env 时使用下方兜底默认值。用例/测试可通过参数覆盖。
 import os as _os
-DEFAULT_PHONE: str = _os.getenv("TEST_PHONE", "18908323900")
+DEFAULT_PHONE: str = _os.getenv("TEST_PHONE", "15922507735")
 DEFAULT_PASSWORD: str = _os.getenv("TEST_PASSWORD", "Aa123456")
 
 
@@ -139,7 +139,13 @@ class LoginOperate:
         end_y: int,
         duration_ms: int = 500,
     ) -> None:
-        """W3C Actions 滑动优先；失败时 fallback 到 mobile: swipe。"""
+        """W3C Actions 滑动优先；失败时 fallback 到 mobile: swipeGesture。
+
+        注：Appium 2 + UiAutomator2 4.x 已移除 ``mobile: swipe``，改用 ``mobile: swipeGesture``。
+        swipeGesture 参数是 ``direction + percent``（必填），不能用 startX/startY/endX/endY。
+        这里我们用 ``direction + percent`` 描述手势（默认从下到上 / 从右到左），
+        通过把屏幕分成 N 段（默认 80%）来近似等效坐标滑动。
+        """
         try:
             actions = ActionChains(self.driver)
             pa = actions.w3c_actions.pointer_action
@@ -150,15 +156,38 @@ class LoginOperate:
             pa.pointer_up()
             actions.perform()
         except Exception as e:
-            self.logger.warning(f"W3C Actions 滑动失败，改用 mobile: swipe 兜底: {e}")
+            self.logger.warning(
+                f"W3C Actions 滑动失败，改用 mobile: swipeGesture 兜底: {e}"
+            )
+            # mobile: swipeGesture（UiAutomator2 4.x）必填参数：
+            #   left/top/right/bottom：滑动区域（屏幕坐标矩形）；
+            #   direction：滑动方向（"up"/"down"/"left"/"right"）。
+            #   可选：percent（0~1，默认 0.25）
+            # 这里我们用屏宽 + 中点 y 位置，做全屏水平/垂直滑动。
+            try:
+                window_size = self.driver.get_window_size()
+                w = window_size.get("width", 720)
+                h = window_size.get("height", 1280)
+            except Exception:
+                w, h = 720, 1280
+
+            # 默认：左右滑动（用例中通常是左滑）
+            if abs(end_x - start_x) > abs(end_y - start_y):
+                direction = "left" if end_x < start_x else "right"
+                left, top, right, bottom = 0, int(h * 0.3), w, int(h * 0.7)
+            else:
+                direction = "up" if end_y < start_y else "down"
+                left, top, right, bottom = int(w * 0.1), 0, int(w * 0.9), h
+
             self.driver.execute_script(
-                "mobile: swipe",
+                "mobile: swipeGesture",
                 {
-                    "startX": start_x,
-                    "startY": start_y,
-                    "endX": end_x,
-                    "endY": end_y,
-                    "duration": duration_ms,
+                    "left": left,
+                    "top": top,
+                    "right": right,
+                    "bottom": bottom,
+                    "direction": direction,
+                    "percent": 0.75,
                 },
             )
 
@@ -168,7 +197,7 @@ class LoginOperate:
 
         行为参考旧框架 scripts/test_login.py::click_agreement_btn：
         - 先关 ANR 弹窗；
-        - 10s 等元素可点击；
+        - 5s 等元素可点击（缩短自 10s）；
         - 找不到时 dump 可见元素 + 保存截图（仅 dump_on_miss=True 时执行），
           但**不抛异常**（协议弹窗可能不存在）；
         - 返回 True 表示点了一次，False 表示没有协议弹窗。
@@ -179,7 +208,7 @@ class LoginOperate:
         """
         self._close_anr_dialog_if_exists()
         try:
-            WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable(AGREEMENT_BTN)
             ).click()
             self.logger.info("已点击同意按钮")
@@ -199,10 +228,11 @@ class LoginOperate:
         """引导页左滑三次进入主页。
 
         行为参考旧框架 scripts/test_login.py::swipe_left_three_times：
-        启动后先 sleep 3（避免闪退），连续左滑 3 次。
+        启动后先 sleep 1（避免闪退，比 sleep 3 快得多），连续左滑 3 次。
         """
-        # App 刚启动完成后立即滑动容易触发闪退，先等待几秒让首页稳定
-        sleep(3)
+        # App 刚启动完成后立即滑动容易触发闪退，先等 1s 让首页稳定
+        # （原版 sleep 3，但实际 APP 启动后 1s 内已经稳定）
+        sleep(1)
         for idx in range(1, 4):
             self._close_anr_dialog_if_exists()
             self.close_popup_if_exists()
@@ -217,11 +247,12 @@ class LoginOperate:
         - 每次循环都重新查找元素，避免页面跳转后旧元素失效；
         - 若中途元素消失/不可点击，dump 可见元素 + 保存截图便于排查；
         - 任一次失败立即 raise（确保后续用例能感知到）。
+        - 等待超时缩短为 5s（原 10s），加快失败流程。
         """
         for i in range(times):
             self.close_popup_if_exists()
             try:
-                btn = WebDriverWait(self.driver, 10).until(
+                btn = WebDriverWait(self.driver, 5).until(
                     EC.element_to_be_clickable(CLICK_BTN)
                 )
                 btn.click()
@@ -279,12 +310,11 @@ class LoginOperate:
         - 左滑 3 次 + 入口 5 次是"进入主页面 → 进入我的"的标准动作链；
         - 任何步骤失败会沿用 click_page 的 raise，让上游用例知道用例间状态恢复失败。
         """
-        self.logger.info("[前置流程] 开始：点同意 → 左滑 3 → 入口 5 → 兜底点同意")
+        self.logger.info("[前置流程] 开始：点同意 → 左滑 3 → 入口 5")
         self.click_agreement_btn(dump_on_miss=True)
         self.swipe_left_three_times()
         self.click_page(times=5)
-        # 兜底再点一次同意（部分机型上协议弹窗会重复弹出）；不 dump 避免重复截图
-        self.click_agreement_btn(dump_on_miss=False)
+        # 不再"兜底再点一次同意"：第一次点完就够，重复点浪费 5s
 
     # ===================== 我的 / 未登录 =====================
     def click_my_btn(self) -> None:

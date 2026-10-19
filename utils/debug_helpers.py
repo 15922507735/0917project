@@ -76,7 +76,29 @@ def close_anr_if_exists(
         driver: Appium driver 实例。
         logger: 日志对象。
         timeout: 等待弹窗出现的超时秒数，默认 2s。
+
+    业务背景（坑点）：
+        ``CLOSE_BTN = android:id/aerr_close`` 是系统级"应用无响应"对话框的关闭按钮。
+        但 Android 桌面（``com.android.launcher3``）上也存在同 id 的"弹窗关闭"按钮，
+        一旦 APP 闪退到桌面，本函数会被触发并**误关桌面的弹窗关闭按钮**，
+        进而影响下一条用例的启动（用例 1 会发现自己在 Launcher 上）。
+
+    修复：仅当 ``current_package == APP_PACKAGE`` 时才检测 ANR 弹窗。
     """
+    # 防御：APP 不在前台时（闪退到桌面 / 弹 ANR 之前），直接跳过。
+    # 避免误匹配 Android 桌面上的 aerr_close 同 id 元素。
+    try:
+        from page_element.login_page import APP_PACKAGE  # 延迟导入避免循环
+        if driver.current_package != APP_PACKAGE:
+            logger.info(
+                f"[ANR] 当前包名={driver.current_package} ≠ {APP_PACKAGE}，"
+                f"不在 APP 内，跳过 ANR 弹窗检测（避免误关桌面同 id 按钮）"
+            )
+            return False
+    except Exception:
+        # current_package 探测失败时也不做检测（保守策略）
+        return False
+
     try:
         btn = WebDriverWait(driver, timeout).until(
             EC.presence_of_element_located(CLOSE_BTN)

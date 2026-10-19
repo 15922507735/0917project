@@ -42,8 +42,14 @@ CLOSE_BTN = (AppiumBy.ID, "android:id/aerr_close")
 CLICK_BTN = (AppiumBy.ID, f"{APP_PACKAGE}:id/img")
 
 # ===================== 底部 Tab =====================
-# 底部 Tab "我的"（XPath 按文本匹配，与旧框架 scripts/test_login.py 一致）
-MY_BTN = (By.XPATH, "//*[@text='我的']")
+# 底部 Tab "我的"（TextView id=title 且 text=我的）
+# 与 DISCOVER_BUTTON（"发现" Tab）写法保持一致。
+# 注：之前用 ``//*[@text='我的']`` 模糊匹配，会误匹配到"我的"页内的"我的订单"等文本，
+#     强限定 id=title 才能精确定位到底部 Tab 栏。
+MY_BTN = (
+    AppiumBy.XPATH,
+    f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/title' and @text='我的']",
+)
 
 # ===================== 登录入口 =====================
 # "未登录"入口

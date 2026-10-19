@@ -81,8 +81,12 @@ def _build_appium_options() -> UiAutomator2Options:
     options.app_package = APP_PACKAGE
     options.app_activity = APP_ACTIVITY
     options.app_wait_activity = APP_WAIT_ACTIVITY
-    # noReset=True：保留 APP 登录态/缓存，避免每个用例重新登录
-    options.no_reset = True
+    # noReset：通过环境变量 APP_NO_RESET 切换。
+    #   APP_NO_RESET=false → 冷启动：APP 状态被清空，必然停在协议页 / 引导页，
+    #                        用例 1/2/3 的"未登录"前置流程可被实际跑到。**默认行为**。
+    #   APP_NO_RESET=true  → 热启动：复用 noReset 残留登录态（用例 1/2/3 会被 SKIPPED）。
+    # 默认改为 false：用户希望"从冷启动开始跑"，业务场景是 APP 重新进入业务流。
+    options.no_reset = os.getenv("APP_NO_RESET", "false").lower() not in ("false", "0", "no")
     # 指定 chromedriver 路径，避免切 WebView 时 Appium 报
     # "No Chromedriver found that can automate Chrome '91.0.4472'"
     options.set_capability("appium:chromedriverExecutable", CHROMEDRIVER_EXECUTABLE)
@@ -287,6 +291,28 @@ def driver(logger):
                 "（残留会话），继续执行（由用例 2 自行处理）"
             )
 
+        # 兜底：点完协议按钮后，APP 偶尔会闪退到桌面（系统弹 ANR 后被 close_anr 误关）。
+        # 此时若 current_package != APP_PACKAGE，主动冷启动一次把 APP 拉回前台。
+        try:
+            sleep(2)
+            if d.current_package != APP_PACKAGE:
+                logger.warning(
+                    f"[driver] 点完协议后当前包名={d.current_package} ≠ {APP_PACKAGE}，"
+                    f"主动冷启动拉回 APP 前台"
+                )
+                _relaunch_app(d, logger)
+        except Exception as e:
+            logger.warning(f"[driver] 协议后兜底冷启动失败（可忽略）: {e}")
+
+        # ★ 关键：点完协议 + 处理 ANR 之后，只做"软探测"——不主动跑前置流程。
+        # 原因：run_pre_login_flow（点同意→左滑 3→入口 5）会浪费 2~3 分钟，
+        #       且 swipe 在 Appium 2 上常失败。
+        # 这里只打印"未在发现页"的 warning，由后续用例的 ensure_ready（v4）兜底。
+        logger.warning(
+            "[driver] 启动后 APP 不在发现页（可能停在 QYLeadingActivity / 协议页 / 主页），"
+            "由用例侧 ensure_ready 兜底切回发现 Tab"
+        )
+
     try:
         yield d
     finally:
@@ -306,26 +332,73 @@ def is_logged_in_session(driver, logger) -> bool:
     本 fixture 在 driver 启动后立即探测一次当前登录态，
     用例 1 / 2 / 3 在已登录时 pytest.skip，只让用例 5 跑主体。
 
-    判据复用 FirstPageOperate.is_on_discover_page() —— "已在发现页"
-    等价于"已登录（noReset 残留登录态）"。
+    判据：点"我的" Tab 后看登录态昵称元素（LOGINING_BTN）是否可见。
+        可见 → 已登录；不可见 → 未登录。
+    （"在发现页"判据不准确：未登录用户也能看到发现页 / 推荐 Tab。）
 
     返回：
         bool: True 表示已登录（已在发现页），False 表示未登录。
     """
     # 延迟导入避免 conftest 启动时拉入 first_page_operate（依赖 ddddocr 等）
     from object_operation.first_page_operate import FirstPageOperate
-    fp_op = FirstPageOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    try:
-        on_discover = fp_op.is_on_discover_page()
-    except Exception as e:
-        logger.warning(f"[is_logged_in_session] 探测失败，按未登录处理: {e}")
-        return False
+    from object_operation.login_operate import LoginOperate
+    from page_element.login_page import LOGINING_BTN, MY_BTN
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
-    if on_discover:
-        logger.info("[is_logged_in_session] APP 已在发现页 → 已登录")
-    else:
-        logger.info("[is_logged_in_session] APP 不在发现页 → 未登录")
-    return on_discover
+    fp_op = FirstPageOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    login_op = LoginOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+
+    # 0. 兜底：检测当前是否在系统级崩溃弹窗（"长安启源屡次停止运行"）。
+    #    冷启动时常因 ANR / 闪退触发系统弹窗，导致后续 find_element 失败。
+    #    这里主动点 "关闭应用" + activate_app 拉回 APP。
+    try:
+        _close_anr_if_exists(driver, logger)
+    except Exception:
+        pass
+    try:
+        from page_element.login_page import APP_PACKAGE as _APP_PKG
+        current_pkg = driver.current_package or ""
+        if current_pkg and current_pkg != _APP_PKG:
+            logger.warning(
+                f"[is_logged_in_session] 当前包名={current_pkg} ≠ {_APP_PKG}，"
+                f"主动 activate_app 拉回 APP"
+            )
+            driver.activate_app(_APP_PKG)
+            import time as _t
+            _t.sleep(2)
+    except Exception as e:
+        logger.warning(f"[is_logged_in_session] 拉回 APP 失败（忽略）: {e}")
+
+    # 1. 先确保 APP 在"我的" Tab（这样才能看到登录态昵称元素 LOGINING_BTN）
+    try:
+        login_op.click_my_btn()
+        import time as _t
+        _t.sleep(1)
+    except Exception as e:
+        logger.warning(f"[is_logged_in_session] 点我的 Tab 失败: {e}")
+
+    # 2. 探测 LOGINING_BTN（已登录后"我的"页面会显示昵称）是否可见
+    try:
+        WebDriverWait(driver, 2).until(
+            EC.visibility_of_element_located(LOGINING_BTN)
+        )
+        logger.info("[is_logged_in_session] LOGINING_BTN 可见 → 已登录")
+        # 3. 探测完点回发现 Tab（不影响后续用例的稳态）
+        try:
+            fp_op.click_discover_tab()
+        except Exception:
+            pass
+        return True
+    except (TimeoutException, NoSuchElementException):
+        logger.info("[is_logged_in_session] LOGINING_BTN 不可见 → 未登录")
+        # 探测完点回发现 Tab（让后续用例从发现页起跑）
+        try:
+            fp_op.click_discover_tab()
+        except Exception:
+            pass
+        return False
 
 
 # ===================== 4. 用例级自动前后置 fixture（autouse） =====================

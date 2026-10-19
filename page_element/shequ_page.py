@@ -81,10 +81,15 @@ TOPIC_ALL_FOLLOW_BTN = (
     f"//android.widget.TextView[@resource-id='{APP_PACKAGE}:id/tv_tab' and @text='关注']",
 )
 # 社区内容标签-聊天
+# 注：APP 内聊天 tab 的 TextView 没有 text="聊天" 属性（id 是 tv_imChatList），
+# 同时该 tab 在"关注"视图下可能位于底部 Tab 栏且需等待其出现后再点击。
+# 优先用 XPath 文本匹配（与最新/视频/关注一致），若匹配不到再用 id 兜底。
 TOPIC_ALL_CHAT_BTN = (
-    AppiumBy.ID,
-    f"{APP_PACKAGE}:id/tv_imChatList",
-)  
+    AppiumBy.XPATH,
+    # 同时匹配 text=聊天 和 id=tv_imChatList 任一形式
+    f"//android.widget.TextView[(@text='聊天' and @resource-id='{APP_PACKAGE}:id/tv_tab') "
+    f"or @resource-id='{APP_PACKAGE}:id/tv_imChatList']",
+)
 # 聊天列表
 TOPIC_ALL_CHAT_LIST = (
     AppiumBy.ID,

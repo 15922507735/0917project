@@ -180,8 +180,33 @@ class ShequOperate:
         )
         self.logger.info(f"已断言关注标签选中")
     def click_topic_all_chat_btn(self) -> None:
-        # 点击聊天标签
-        self.driver.find_element(*TOPIC_ALL_CHAT_BTN).click()
+        # 点击聊天标签。
+        # 注：聊天 tab 在"关注"视图下可能不在 viewport，
+        # 先等元素出现（最长 expect_wait_timeout 秒），必要时向下滑动让它入屏。
+        # 这里不用 find_element 立即点击，而是用 WebDriverWait 等可点击
+        # ——避免"已点击关注标签按钮"后立刻点 chat_btn 导致 Tab 栏还没渲染完而失败。
+        self.logger.info("等待聊天标签按钮可点击...")
+        try:
+            WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.element_to_be_clickable(TOPIC_ALL_CHAT_BTN)
+            ).click()
+        except Exception as e:
+            # 兜底：若元素超出 viewport，向下滑动一次再等
+            self.logger.warning(
+                f"聊天标签未在 {self.expect_wait_timeout}s 内可点击，"
+                f"尝试向下滑动让它入屏: {e.__class__.__name__}"
+            )
+            self.driver.swipe(
+                self.driver.get_window_size()["width"] // 2,
+                int(self.driver.get_window_size()["height"] * 0.7),
+                self.driver.get_window_size()["width"] // 2,
+                int(self.driver.get_window_size()["height"] * 0.3),
+                500,
+            )
+            sleep(0.5)
+            WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.element_to_be_clickable(TOPIC_ALL_CHAT_BTN)
+            ).click()
         self.logger.info(f"已点击聊天标签按钮")
         # 等待聊天页面加载完成，出现聊天列表元素
         WebDriverWait(self.driver, self.expect_wait_timeout).until(

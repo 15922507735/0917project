@@ -282,9 +282,13 @@ class BuycarOperate:
 
     # 点击支付定金页面的返回按钮
     def click_store_config_pay_btn(self):
-        """点击支付定金页面的返回按钮。"""
-        self.driver.find_element(*STORE_CONFIG_PAY_BTN).click()
-        self.logger.info("点击支付定金页面的返回按钮成功")
+        """点击支付定金页面的返回按钮。
+
+        实现：直接用 driver.back()（系统返回键），不用找 H5 元素。
+        这样不需要切 WebView context，更稳，且与 native APP 行为一致。
+        """
+        self.driver.back()
+        self.logger.info("点击支付定金页面的返回按钮成功（系统返回键）")
 
 
         
