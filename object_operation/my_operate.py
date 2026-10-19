@@ -489,3 +489,22 @@ class MyOperate:
             EC.presence_of_element_located(MY_SETTING_BTN)
         )
         self.logger.info("跳转到我的页面-设置出现")
+
+    # 检查我的页面设置按钮是否可见
+    def is_setting_btn_visible(self):
+        """检查我的页面"设置"按钮是否可见。
+
+        用于用例返回后断言"成功回到我的页面"。
+        在 expect_wait_timeout 内轮询设置按钮可见性，超时返回 False。
+        """
+        try:
+            WebDriverWait(self.driver, self.expect_wait_timeout).until(
+                EC.visibility_of_element_located(MY_SETTING_BTN)
+            )
+            self.logger.info("[MyOperate] 我的页面设置按钮可见")
+            return True
+        except Exception as e:
+            self.logger.warning(
+                f"[MyOperate] 我的页面设置按钮不可见（超时）: {e}"
+            )
+            return False

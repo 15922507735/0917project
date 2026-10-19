@@ -2,7 +2,8 @@
 
 按 PO 分层设计，所有用例集中在本文件：
 - 用例只调用 LoginOperate / FirstPageOperate / OrderOperate / WebViewOperate /
-  SeeCarOperate / ShequOperate 的方法；
+  SeeCarOperate / ShequOperate / HuodongOperate / FatieOperate / FuwuOperate /
+  BuycarOperate / MyOperate 的方法；
 - **业务策略**：不强制清除登录。
   * 用例 1 / 2 / 3 业务前提是'未登录'，已登录态 pytest.skip；
   * 用例 5 业务前提是'已登录'（聚合页/立即订购），未登录态 pytest.skip；
@@ -15,24 +16,65 @@
     这正是"已登录 + 热启动后"的稳态；
   * 不在发现页 → 走完整前置流程：点同意 → 左滑 3 → 入口 5 → 兜底再点同意 → 切发现；
 - 用例之间不依赖彼此的 APP 状态（任何一个失败不影响下一个）；
-- 所有用例共享 session 级 driver fixture。
+- 所有用例共享 session 级 driver fixture；
+- 用例 14 之前存在强状态链关系：第 N 个用例直接复用上一用例的最终状态（用 `_build_fatie_op_keep` 跳过 ensure_ready）；
+- 用例 15~20 在服务模块内形成强状态链：第 N 个用例直接复用上一用例的最终状态（用 `_build_fuwu_op_keep` 跳过 ensure_ready）；
+- 用例 21~33 在「我的」模块内形成强状态链：第 N 个用例直接复用上一用例的最终状态（默认都依赖上一用例的尾状态，无需 ensure_ready）；
+- 用例 34~35（购车）置于文件末尾：上一用例跑完停在「我的」页面，用 `_build_buycar_op` 主动重置，避免用例 33 跑完后的状态干扰。
 
-包含 7 个用例（业务用例 1 / 2 / 3 / 5 / 6 / 7 / 8）：
-- test_start_app_and_accept_agreement：冒烟，断言 APP 包名（已登录态 skip）
-- test_go_mine_and_logout：回归，进入「我的 → 未登录」（已登录态 skip）
-- test_login_with_password：冒烟 + 回归，密码登录完整流程（已登录态 skip）
-- test_click_aggregate_btn：回归，点击聚合页 + 立即订购 + 配置选择页 + 返回聚合页（**未登录态 skip**）
-- test_click_seecar_btn：回归，点击看车 Tab + Q05 车型入口（**登录/未登录都跑**）
-- test_click_shequ_tab：回归，点击社区 Tab + 断言热门话题（**登录/未登录都跑**）
-- test_click_topic_square：回归，切社区页 + 点击话题广场（**登录/未登录都跑**）
-- test_click_topic_all_page_btn：回归，切社区页 + 点击最新标签（**登录/未登录都跑**）
-- test_click_fuwu_btn：回归，切服务页 + 点击家充服务（**登录/未登录都跑**）
-- test_click_jiachong_zhixiang_back_btn：回归，切服务页 + 点击家充桩智享返回按钮（**登录/未登录都跑**）
-- test_click_store_charge_guide_text：回归，切服务页 + 点击指引指导文本元素（**登录/未登录都跑**）
-- test_click_store_charge_back_btn：回归，切服务页 + 点击家充装返回按钮（**登录/未登录都跑**）
-- test_click_store_charge_btn：回归，切服务页 + 点击广告充桩按钮（**登录/未登录都跑**）
-- test_click_store_charge_back_btn：回归，切服务页 + 点击家充装返回按钮（**登录/未登录都跑**）
+包含 35 个用例（按编号 → 模块归类）：
 
+登录 / 我的前置
+- test_start_app_and_accept_agreement（用例 1）：冒烟，断言 APP 包名（已登录态 skip）
+- test_go_mine_and_logout（用例 2）：回归，进入「我的 → 未登录」（已登录态 skip）
+- test_login_with_password（用例 3）：冒烟 + 回归，密码登录完整流程（已登录态 skip）
+
+订单 / WebView
+- test_click_aggregate_btn（用例 5）：回归，点击聚合页 + 立即订购 + 配置选择页 + 返回聚合页（**未登录态 skip**）
+
+看车 / 社区 / 话题
+- test_click_seecar_btn（用例 6）：回归，点击看车 Tab + Q05 车型入口（**登录/未登录都跑**）
+- test_click_shequ_tab（用例 7）：回归，点击社区 Tab + 断言热门话题（**登录/未登录都跑**）
+- test_click_topic_square（用例 8）：回归，切社区页 + 点击话题广场（**登录/未登录都跑**）
+- test_click_topic_all_page_btn（用例 9）：回归，所有圈子地域标签
+- test_click_topic_neirong（用例 10）：社区内容标签切换
+
+活动
+- test_click_huodong_status（用例 11）：活动状态筛选
+
+发帖
+- test_click_post_button（用例 12）：发帖入口 + 发文章
+- test_click_fatie（用例 13）：发帖完整流程（含上传封面/内容图，默认 skip；设 `RUN_PUBLISH=1` 启用）
+- test_fatie_input_draft（用例 14）：数据驱动：标题 + 富文本内容
+
+服务（Fuwu，强状态链）
+- test_click_fuwu_tab（用例 15）：服务 Tab
+- test_click_store_btn（用例 16）：门店跳转
+- test_click_store_address_btn（用例 17）：门店详情位置按钮
+- test_click_store_address_btn_submit（用例 18）：位置弹窗确定
+- test_click_store_deliver_maint_back（用例 19）：门店详情 → 交付 → 维保 → 返回
+- test_click_store_charge（用例 20）：服务首页 → 家充服务 → 返回
+
+我的（My，强状态链）
+- test_mypage_operate（用例 21）：我的模块入口
+- test_mypage_operate_skin（用例 22）：皮肤卡片切换使用
+- test_mypage_operate_setting（用例 23）：设置按钮 + 个人资料
+- test_mypage_operate_nickname（用例 24）：修改昵称
+- test_mypage_operate_setting_back（用例 25）：设置页返回
+- test_mypage_operate_sign（用例 26）：签到
+- test_mypage_operate_conyb（用例 27）：源宝
+- test_mypage_operate_conyb_level（用例 28）：定级积分
+- test_mypage_operate_order（用例 29）：我的订单
+- test_mypage_operate_shop（用例 30）：车主店铺
+- test_mypage_operate_cross_city（用例 31）：同城活动
+- test_mypage_operate_card（用例 32）：我的卡券
+- test_mypage_operate_online_evaluation（用例 33）：在线评价
+
+购车（Buycar，置于最后执行）
+- test_click_store_buy（用例 34）：购车完整配置 + 订购流程
+- test_click_ruten_btn（用例 35）：支付定金返回
+
+> 注：用例编号历史断档（4 已废弃），所有 35 个用例按执行顺序排列：1,2,3,5..20,21~33,34,35。
 
 运行方式：
     python cli.py            # 全部用例
@@ -762,6 +804,7 @@ def test_mypage_operate_sign(driver, logger):
     my_op.click_sign_btn()
     logger.info("[用例26] 点击签到操作-完成")
 
+
 @pytest.mark.regression
 def test_mypage_operate_conyb(driver, logger):
     """用例27：我的模块操作-点击查看源宝，并返回我的页面。"""
@@ -769,6 +812,8 @@ def test_mypage_operate_conyb(driver, logger):
     # 点击源宝按钮
     my_op.click_conyb_btn()
     logger.info("[用例27] 点击点击查看源宝-完成")
+    # 成功返回到我的页面，设置按钮可见
+    assert my_op.is_setting_btn_visible() is True
 
 @pytest.mark.regression
 def test_mypage_operate_conyb_level(driver, logger):
@@ -777,7 +822,9 @@ def test_mypage_operate_conyb_level(driver, logger):
     # 点击定级积分按钮
     my_op.click_conyb_level_btn()
     logger.info("[用例28] 点击点击查看定级积分-完成")
-   
+    # 成功返回到我的页面，设置按钮可见
+    assert my_op.is_setting_btn_visible() is True
+
 @pytest.mark.regression
 def test_mypage_operate_order(driver, logger):
     """用例29：我的模块操作-点击查看我的订单，并返回我的页面。"""
@@ -785,6 +832,8 @@ def test_mypage_operate_order(driver, logger):
     # 点击我的订单按钮
     my_op.click_order_btn()
     logger.info("[用例29] 点击点击查看我的订单-完成")
+    # 成功返回到我的页面，设置按钮可见
+    assert my_op.is_setting_btn_visible() is True
 
 @pytest.mark.regression
 def test_mypage_operate_shop(driver, logger):
@@ -793,6 +842,8 @@ def test_mypage_operate_shop(driver, logger):
     # 点击车主店铺按钮
     my_op.click_shop_btn()
     logger.info("[用例30] 点击点击查看车主店铺-完成")
+    # 成功返回到我的页面，设置按钮可见
+    assert my_op.is_setting_btn_visible() is True
 
 @pytest.mark.regression
 def test_mypage_operate_cross_city(driver, logger):
@@ -801,6 +852,8 @@ def test_mypage_operate_cross_city(driver, logger):
     # 点击同城活动按钮
     my_op.click_cross_city_activity()
     logger.info("[用例31] 点击点击查看同城活动-完成")
+    # 成功返回到我的页面，设置按钮可见
+    assert my_op.is_setting_btn_visible() is True
 
 @pytest.mark.regression
 def test_mypage_operate_card(driver, logger):
@@ -809,6 +862,8 @@ def test_mypage_operate_card(driver, logger):
     # 点击我的卡券按钮
     my_op.click_card_btn()
     logger.info("[用例32] 点击点击查看我的卡券-完成")
+    # 成功返回到我的页面，设置按钮可见
+    assert my_op.is_setting_btn_visible() is True
 
 @pytest.mark.regression
 def test_mypage_operate_online_evaluation(driver, logger):
@@ -817,6 +872,12 @@ def test_mypage_operate_online_evaluation(driver, logger):
     # 点击在线评价按钮
     my_op.click_online_evaluation()
     logger.info("[用例33] 点击点击查看在线评价-完成")
+    # 成功返回到我的页面，设置按钮可见
+    assert my_op.is_setting_btn_visible() is True
+
+
+# ===================== 用例 34：购车模块操作（置于最后执行） =====================
+# _build_buycar_op / _build_buycar_op_keep 已提取至 utils/test_helpers.py
 
 
 # ===================== 用例 34：购车模块操作（置于最后执行） =====================
