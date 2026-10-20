@@ -4,6 +4,8 @@
 """
 from __future__ import annotations
 
+import allure
+
 import pytest
 
 from object_operation.first_page_operate import FirstPageOperate
@@ -18,6 +20,10 @@ from utils.test_helpers import (
 
 
 # ===================== 用例 11 =====================
+@allure.feature("活动模块")
+@allure.story("活动状态筛选")
+@pytest.mark.feature_huodong
+@pytest.mark.story_huodongstatus
 @pytest.mark.regression
 def test_click_huodong_status(driver, logger):
     """用例 11：点击活动状态按钮。"""

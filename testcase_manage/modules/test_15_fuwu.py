@@ -11,6 +11,8 @@
 """
 from __future__ import annotations
 
+import allure
+
 import pytest
 
 from utils.test_helpers import (
@@ -20,6 +22,11 @@ from utils.test_helpers import (
 
 
 # ===================== 用例 15：点击服务 Tab =====================
+@allure.feature("服务模块（门店、家充）")
+@allure.story("服务 Tab")
+@pytest.mark.feature_fuwu
+@pytest.mark.story_fuwutab
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_click_fuwu_tab(driver, logger):
     """用例15：点击底部"服务"Tab，断言服务页面加载完成（出现"门店"文本）。"""
@@ -29,6 +36,11 @@ def test_click_fuwu_tab(driver, logger):
 
 
 # ===================== 用例 16：点击门店 =====================
+@allure.feature("服务模块（门店、家充）")
+@allure.story("门店跳转")
+@pytest.mark.feature_fuwu
+@pytest.mark.story_storeentry
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_click_store_btn(driver, logger):
     """用例16：在服务首页点击门店跳转按钮，断言门店详情页加载（出现位置按钮）。
@@ -45,6 +57,11 @@ def test_click_store_btn(driver, logger):
 
 
 # ===================== 用例 17：点击门店详情位置按钮 =====================
+@allure.feature("服务模块（门店、家充）")
+@allure.story("门店位置按钮")
+@pytest.mark.feature_fuwu
+@pytest.mark.story_storeaddress
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_click_store_address_btn(driver, logger):
     """用例17：点击门店详情位置按钮，断言弹窗加载（出现"确定"按钮）。
@@ -58,6 +75,11 @@ def test_click_store_address_btn(driver, logger):
 
 
 # ===================== 用例 18：点击位置弹窗确定按钮 =====================
+@allure.feature("服务模块（门店、家充）")
+@allure.story("位置弹窗确定")
+@pytest.mark.feature_fuwu
+@pytest.mark.story_storeaddresssubmit
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_click_store_address_btn_submit(driver, logger):
     """用例18：点击位置弹窗的确定按钮，断言弹窗关闭。
@@ -70,6 +92,11 @@ def test_click_store_address_btn_submit(driver, logger):
 
 
 # ===================== 用例 19：门店详情→交付→维保→返回服务首页 =====================
+@allure.feature("服务模块（门店、家充）")
+@allure.story("门店 → 交付 → 维保 → 返回")
+@pytest.mark.feature_fuwu
+@pytest.mark.story_storedelivermaint
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_click_store_deliver_maint_back(driver, logger):
     """用例19：门店详情页 → 收起 → 交付中心 → 维保中心 → 返回到服务首页。
@@ -89,6 +116,11 @@ def test_click_store_deliver_maint_back(driver, logger):
 
 
 # ===================== 用例 20：服务首页→滑动→家充服务→返回 =====================
+@allure.feature("服务模块（门店、家充）")
+@allure.story("家充服务")
+@pytest.mark.feature_fuwu
+@pytest.mark.story_storecharge
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_click_store_charge(driver, logger):
     """用例20：服务首页 → 上滑 → 点家充服务 → 返回。

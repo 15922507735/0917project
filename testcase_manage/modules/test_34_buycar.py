@@ -8,6 +8,8 @@
 """
 from __future__ import annotations
 
+import allure
+
 import pytest
 
 from object_operation.first_page_operate import FirstPageOperate
@@ -20,6 +22,11 @@ from utils.test_helpers import (
 
 
 # ===================== 用例 34：购车模块操作 =====================
+@allure.feature("购车模块")
+@allure.story("购车完整配置 / 订购")
+@pytest.mark.feature_buycar
+@pytest.mark.story_buyconfig
+@pytest.mark.critical_path
 @pytest.mark.regression
 def test_click_store_buy(driver, logger):
     """用例34：购车模块操作。
@@ -72,6 +79,10 @@ def test_click_store_buy(driver, logger):
 
 
 # ===================== 用例 35：支付定金返回 =====================
+@allure.feature("购车模块")
+@allure.story("支付定金返回")
+@pytest.mark.feature_buycar
+@pytest.mark.story_buypay
 @pytest.mark.regression
 def test_click_ruten_btn(driver, logger):
     """用例35：点击支付定金返回按钮。"""

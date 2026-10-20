@@ -6,6 +6,8 @@
 """
 from __future__ import annotations
 
+import allure
+
 import pytest
 
 from object_operation.first_page_operate import FirstPageOperate
@@ -19,6 +21,10 @@ from utils.test_helpers import (
 
 
 # ===================== 用例 1 =====================
+@allure.feature("登录模块")
+@allure.story("启动冒烟")
+@pytest.mark.feature_login
+@pytest.mark.story_smoke
 @pytest.mark.smoke
 def test_start_app_and_accept_agreement(driver, logger, is_logged_in_session):
     """用例 1：验证 Appium session 已就绪 + 包名 / Activity 断言（冒烟）。
@@ -58,6 +64,10 @@ def test_start_app_and_accept_agreement(driver, logger, is_logged_in_session):
 
 
 # ===================== 用例 2 =====================
+@allure.feature("登录模块")
+@allure.story("进入未登录入口")
+@pytest.mark.feature_login
+@pytest.mark.story_logout
 @pytest.mark.regression
 def test_go_mine_and_logout(driver, logger, is_logged_in_session):
     """用例 2：进入「我的」Tab 并打开「未登录」入口。
@@ -86,6 +96,11 @@ def test_go_mine_and_logout(driver, logger, is_logged_in_session):
 
 
 # ===================== 用例 3 =====================
+@allure.feature("登录模块")
+@allure.story("手机号密码登录")
+@pytest.mark.feature_login
+@pytest.mark.story_phonelogin
+@pytest.mark.critical_path
 @pytest.mark.smoke
 @pytest.mark.regression
 def test_login_with_password(driver, logger, is_logged_in_session):

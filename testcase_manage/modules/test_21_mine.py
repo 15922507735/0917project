@@ -18,12 +18,19 @@
 """
 from __future__ import annotations
 
+import allure
+
 import pytest
 
 from object_operation.my_operate import MyOperate
 
 
 # ===================== 用例 21 =====================
+@allure.feature("我的模块")
+@allure.story("我的入口")
+@pytest.mark.feature_mine
+@pytest.mark.story_mineentry
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate(driver, logger):
     """用例21：我的模块操作。"""
@@ -33,6 +40,11 @@ def test_mypage_operate(driver, logger):
 
 
 # ===================== 用例 22 =====================
+@allure.feature("我的模块")
+@allure.story("皮肤卡片切换")
+@pytest.mark.feature_mine
+@pytest.mark.story_mineskin
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_skin(driver, logger):
     """用例22：我的模块操作-皮肤卡片切换使用。"""
@@ -58,6 +70,11 @@ def test_mypage_operate_skin(driver, logger):
 
 
 # ===================== 用例 23 =====================
+@allure.feature("我的模块")
+@allure.story("设置 / 个人资料")
+@pytest.mark.feature_mine
+@pytest.mark.story_minesetting
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_setting(driver, logger):
     """用例23：我的模块操作-设置按钮。"""
@@ -71,6 +88,11 @@ def test_mypage_operate_setting(driver, logger):
 
 
 # ===================== 用例 24 =====================
+@allure.feature("我的模块")
+@allure.story("修改昵称")
+@pytest.mark.feature_mine
+@pytest.mark.story_minenickname
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_nickname(driver, logger):
     """用例24：我的模块操作-昵称。"""
@@ -84,6 +106,11 @@ def test_mypage_operate_nickname(driver, logger):
 
 
 # ===================== 用例 25 =====================
+@allure.feature("我的模块")
+@allure.story("设置页返回")
+@pytest.mark.feature_mine
+@pytest.mark.story_minesettingback
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_setting_back(driver, logger):
     """用例25：我的模块操作-设置页面返回按钮。"""
@@ -94,6 +121,11 @@ def test_mypage_operate_setting_back(driver, logger):
 
 
 # ===================== 用例 26 =====================
+@allure.feature("我的模块")
+@allure.story("签到")
+@pytest.mark.feature_mine
+@pytest.mark.story_minesign
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_sign(driver, logger):
     """用例26：我的模块操作-签到操作。"""
@@ -104,6 +136,11 @@ def test_mypage_operate_sign(driver, logger):
 
 
 # ===================== 用例 27 =====================
+@allure.feature("我的模块")
+@allure.story("源宝")
+@pytest.mark.feature_mine
+@pytest.mark.story_mineconyb
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_conyb(driver, logger):
     """用例27：我的模块操作-点击查看源宝，并返回我的页面。"""
@@ -116,6 +153,11 @@ def test_mypage_operate_conyb(driver, logger):
 
 
 # ===================== 用例 28 =====================
+@allure.feature("我的模块")
+@allure.story("定级积分")
+@pytest.mark.feature_mine
+@pytest.mark.story_mineconyblevel
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_conyb_level(driver, logger):
     """用例28：我的模块操作-点击查看定级积分，并返回我的页面。"""
@@ -128,6 +170,11 @@ def test_mypage_operate_conyb_level(driver, logger):
 
 
 # ===================== 用例 29 =====================
+@allure.feature("我的模块")
+@allure.story("我的订单")
+@pytest.mark.feature_mine
+@pytest.mark.story_mineorder
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_order(driver, logger):
     """用例29：我的模块操作-点击查看我的订单，并返回我的页面。"""
@@ -140,6 +187,11 @@ def test_mypage_operate_order(driver, logger):
 
 
 # ===================== 用例 30 =====================
+@allure.feature("我的模块")
+@allure.story("车主店铺")
+@pytest.mark.feature_mine
+@pytest.mark.story_mineshop
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_shop(driver, logger):
     """用例30：我的模块操作-点击查看车主店铺，并返回我的页面。"""
@@ -152,6 +204,11 @@ def test_mypage_operate_shop(driver, logger):
 
 
 # ===================== 用例 31 =====================
+@allure.feature("我的模块")
+@allure.story("同城活动")
+@pytest.mark.feature_mine
+@pytest.mark.story_minecrosscity
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_cross_city(driver, logger):
     """用例31：我的模块操作-点击查看同城活动，并返回我的页面。"""
@@ -164,6 +221,11 @@ def test_mypage_operate_cross_city(driver, logger):
 
 
 # ===================== 用例 32 =====================
+@allure.feature("我的模块")
+@allure.story("我的卡券")
+@pytest.mark.feature_mine
+@pytest.mark.story_minecard
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_card(driver, logger):
     """用例32：我的模块操作-点击查看我的卡券，并返回我的页面。"""
@@ -176,6 +238,11 @@ def test_mypage_operate_card(driver, logger):
 
 
 # ===================== 用例 33 =====================
+@allure.feature("我的模块")
+@allure.story("在线评价")
+@pytest.mark.feature_mine
+@pytest.mark.story_mineevaluation
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_mypage_operate_online_evaluation(driver, logger):
     """用例33：我的模块操作-点击查看在线评价，并返回我的页面。"""

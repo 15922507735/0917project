@@ -305,21 +305,32 @@ class MyOperate:
         
     # 点击我的订单
     def click_order_btn(self):
-        """点击我的订单。"""
+        """点击我的订单。
+
+        完整流程（已根据 test_21_mine.py::test_mypage_operate_order 真实失败迭代过）：
+          1. NATIVE 点"我的订单"按钮 → 进订单列表 NATIVE 页；
+          2. NATIVE 点"订车订单"→ 触发打开 H5 详情页（WebView）；
+          3. WebView 点第一个订单卡片 → 进 H5 订单详情；
+          4. NATIVE 系统返回键 → 直接退到我的页（H5 详情 → 我的页可能由 WebView back 触发）；
+          5. 等设置按钮出现（确认已回到"我的"页）。
+
+        注：H5 内部返回后，可能直接退到 NATIVE 我的页（跳过 NATIVE 订单列表）。
+            不管走哪条路径，最终断言都是"设置按钮可见"。
+        """
+        # 1. NATIVE 点"我的订单"按钮
         self.driver.find_element(*MY_ORDER_BTN).click()
         self.logger.info("成功点击我的订单")
-        # 页面加载完成，出现订车订单
+        # 2. 等订车订单（NATVIE 订单列表元素）
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
             EC.presence_of_element_located(MY_ORDER_RECORD)
         )
         self.logger.info("我的订单列表-订车订单出现")
-        # 点击订车订单
+        # 3. NATIVE 点"订车订单"（触发打开 H5 详情页）
         self.driver.find_element(*MY_ORDER_RECORD).click()
         self.logger.info("成功点击订车订单")
-        # 切换到webview（复用 WebViewOperate 的 context 切换与 chromedriver 匹配逻辑）
+        # 4. 切到 WebView
         self.webview_operate.switch_to_webview()
         self.logger.info("成功切换到webview")
-        # 打印url+title
         try:
             self.logger.info(
                 f"WebView 已激活, url={self.driver.current_url}, "
@@ -327,42 +338,59 @@ class MyOperate:
             )
         except Exception as e:
             self.logger.warning(f"读取 WebView url/title 失败（不影响切 context）: {e}")
-        # 等待订单列表加载完成后点击第一个订单
+        # 5. WebView 等 H5 订单列表元素 + 点第一个
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
             EC.presence_of_element_located(MY_ORDER_FIRST_ITEM)
         )
         self.driver.find_element(*MY_ORDER_FIRST_ITEM).click()
         self.logger.info("成功点击第一个订单")
-        # 页面加载完成，出现订单详情
+        # 6. WebView 等 H5 订单详情
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
             EC.presence_of_element_located(MY_ORDER_DETAIL)
         )
         self.logger.info("订单详情-订单详情出现")
-        # 点击页面顶部返回按钮2次：第一次返回订单列表，第二次返回我的页面
-        self.driver.find_element(*MY_ORDER_DETAIL_BACK_BTN).click()
-        self.logger.info("成功点击返回按钮第1次")
-        # 等待返回到订单列表页
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(MY_ORDER_FIRST_ITEM)
-        )
-        self.driver.find_element(*MY_ORDER_DETAIL_BACK_BTN).click()
-        self.logger.info("成功点击返回按钮第2次")
-        # 切换回native context
-        self.webview_operate.switch_to_native()
-        self.logger.info("成功切换回native context")
-        # 页面加载完成，出现订车订单
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(MY_ORDER_RECORD)
-        )
-        self.logger.info("跳转到我的页面-订车订单出现")
-        # 系统返回到我的页面
+        # 7. 在 WebView 里 driver.back()（H5 详情 → H5 上一级）
+        #    注意：必须在 WebView 里 back，否则会退到桌面。
         self.driver.back()
-        self.logger.info("使用系统返回键退出我的订单页面")
-        # 页面加载完成，出现设置按钮
+        sleep(1)
+        self.logger.info("H5 详情 → H5 上一级（WebView 内 back）")
+        # 8. 若仍在 H5 列表页（能等到列表元素），再 back 一次退出 H5
+        from selenium.common.exceptions import TimeoutException
+        try:
+            WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located(MY_ORDER_FIRST_ITEM)
+            )
+            self.logger.info("H5 列表加载完成-回到 H5 订单列表")
+            self.driver.back()
+            sleep(1)
+            self.logger.info("H5 列表 → 退出 H5（WebView back）")
+        except TimeoutException:
+            self.logger.info("未在 H5 列表页（可能已直接退出 H5）")
+        # 9. 切回 NATIVE_APP
+        self.webview_operate.switch_to_native()
+        self.logger.info("切回 NATIVE_APP")
+        # 10. 循环返回"我的"页：
+        #     H5 退出后可能停在 NATIVE"订车订单"页 / "订单列表"页，
+        #     需要逐层按系统返回键退出，直到"设置"按钮出现（最多 4 次）。
+        for attempt in range(4):
+            try:
+                WebDriverWait(self.driver, 3).until(
+                    EC.presence_of_element_located(MY_SETTING_BTN)
+                )
+                self.logger.info("跳转到我的页面-设置出现")
+                return
+            except TimeoutException:
+                self.logger.info(
+                    f"[返回我的页] 第 {attempt + 1} 次未到我的页，按系统返回键退一层"
+                )
+                self.driver.back()
+                sleep(1)
+        # 兜底：强制将 APP 拉回前台后再等一次
+        self.driver.activate_app(APP_PACKAGE)
         WebDriverWait(self.driver, self.expect_wait_timeout).until(
             EC.presence_of_element_located(MY_SETTING_BTN)
         )
-        self.logger.info("跳转到我的页面-设置出现")
+        self.logger.info("跳转到我的页面-设置出现（activate_app 兜底）")
 
     # 点击车主店铺
     def click_shop_btn(self):

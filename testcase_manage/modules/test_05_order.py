@@ -4,6 +4,8 @@
 """
 from __future__ import annotations
 
+import allure
+
 import pytest
 
 from object_operation.first_page_operate import FirstPageOperate
@@ -19,6 +21,11 @@ from utils.test_helpers import (
 
 
 # ===================== 用例 5 =====================
+@allure.feature("订单模块（聚合页）")
+@allure.story("聚合页 / 立即订购 / 配置选择")
+@pytest.mark.feature_order
+@pytest.mark.story_aggregate
+@pytest.mark.requires_login
 @pytest.mark.regression
 def test_click_aggregate_btn(driver, logger):
     """用例 5：点击聚合页 + 立即订购 + 配置选择页 + 返回聚合页（不点预约试驾）。

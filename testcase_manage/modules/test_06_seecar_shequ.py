@@ -8,6 +8,8 @@
 """
 from __future__ import annotations
 
+import allure
+
 import pytest
 
 from object_operation.first_page_operate import FirstPageOperate
@@ -24,6 +26,10 @@ from utils.test_helpers import (
 
 
 # ===================== 用例 6 =====================
+@allure.feature("看车 / 社区")
+@allure.story("看车 Tab / Q05 车型入口")
+@pytest.mark.feature_seecar_shequ
+@pytest.mark.story_seecar
 @pytest.mark.regression
 def test_click_seecar_btn(driver, logger):
     """用例 6：点击「看车」Tab → 点击 Q05 车型入口。
@@ -55,6 +61,10 @@ def test_click_seecar_btn(driver, logger):
     logger.info("[用例6] 点击 Q05 图标-完成")
 
 # ===================== 用例 7 =====================
+@allure.feature("看车 / 社区")
+@allure.story("社区 Tab")
+@pytest.mark.feature_seecar_shequ
+@pytest.mark.story_shequoy
 @pytest.mark.regression
 def test_click_shequ_tab(driver, logger):
     """用例 7：点击进入社区 Tab 并断言社区页加载完成。
@@ -82,6 +92,10 @@ def test_click_shequ_tab(driver, logger):
 
 
 # ===================== 用例 8 =====================
+@allure.feature("看车 / 社区")
+@allure.story("话题广场")
+@pytest.mark.feature_seecar_shequ
+@pytest.mark.story_topicsquare
 @pytest.mark.regression
 def test_click_topic_square(driver, logger):
     """用例 8：点击话题广场按钮。
@@ -119,6 +133,10 @@ def test_click_topic_square(driver, logger):
     logger.info("[用例8] 点击查看更多按钮-完成")
 
 # ===================== 用例 9 =====================
+@allure.feature("看车 / 社区")
+@allure.story("所有圈子（地域筛选）")
+@pytest.mark.feature_seecar_shequ
+@pytest.mark.story_topicallpage
 @pytest.mark.regression
 def test_click_topic_all_page_btn(driver, logger):
     # 方案A：不调 _ensure_ready —— 用例 8 最后一步已停在"所有圈子" WebView 页，
@@ -140,6 +158,10 @@ def test_click_topic_all_page_btn(driver, logger):
     # 点击返回，出现热门话题元素，则表示成功
 
 # ===================== 用例 10 =====================
+@allure.feature("看车 / 社区")
+@allure.story("社区内容标签（最新/视频/关注/聊天）")
+@pytest.mark.feature_seecar_shequ
+@pytest.mark.story_topiccontent
 @pytest.mark.regression
 def test_click_topic_neirong(driver, logger):
     """用例 10：点击社区内容标签-最新、视频、关注、聊天。

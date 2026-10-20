@@ -9,6 +9,8 @@
 """
 from __future__ import annotations
 
+import allure
+
 import os
 import time
 
@@ -63,6 +65,10 @@ def _fatie_native_reset(driver, logger) -> None:
 
 
 # ===================== 用例 12 =====================
+@allure.feature("发帖模块")
+@allure.story("发帖入口 / 发文章")
+@pytest.mark.feature_fatie
+@pytest.mark.story_postentry
 @pytest.mark.regression
 def test_click_post_button(driver, logger):
     """用例 12：点击发帖入口按钮。"""
@@ -108,6 +114,10 @@ def test_click_post_button(driver, logger):
     reason="用例13会真实发布文章，污染测试数据；用例14已替代数据驱动验证场景。"
            "设环境变量 RUN_PUBLISH=1 启用。",
 )
+@allure.feature("发帖模块")
+@allure.story("完整发帖（含上传封面/内容图）")
+@pytest.mark.feature_fatie
+@pytest.mark.story_fatiefull
 @pytest.mark.regression
 def test_click_fatie(driver, logger):
     """用例 13：发帖完整流程（含上传封面）。
@@ -233,6 +243,10 @@ def _navigate_to_fatie_editor(driver, logger, fatie_op):
     FATIE_DRAFT_DATA,
     ids=[d[0] for d in FATIE_DRAFT_DATA],
 )
+@allure.feature("发帖模块")
+@allure.story("数据驱动 - 标题 / 富文本内容")
+@pytest.mark.feature_fatie
+@pytest.mark.story_fatieinput
 @pytest.mark.regression
 def test_fatie_input_draft(
     driver, logger, fatie_op,
