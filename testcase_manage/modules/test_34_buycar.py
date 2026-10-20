@@ -1,6 +1,7 @@
 """购车（用例 34-35，置于最后执行）。
 
-- test_click_store_buy（用例 34）：购车完整配置 + 订购流程
+- test_click_store_buy（用例 34）：购车模块操作（校验底部 CTA 为"支付订金"或
+  "立即订购"后走对应流程；订金=订金往返，订购=完整配置 + 订购）
 - test_click_ruten_btn（用例 35）：支付定金返回
 
 模块说明：上一用例（用例 33）跑完停在「我的」页面，用 _build_buycar_op_keep 主动重置，
@@ -42,8 +43,15 @@ def test_click_store_buy(driver, logger):
 
     # 2) 构造购车操作实例（不带 ensure_ready）
     buycar_op = _build_buycar_op_keep(driver, logger)
-    buycar_op.click_store_buy_btn()
-    logger.info("[用例34] 点击购车tab按钮-完成")
+    # 3) 校验购车页底部 CTA：【支付订金】/【立即订购】哪个出现，再走对应流程
+    cta_type = buycar_op.click_store_buy_btn()
+    logger.info(f"[用例34] 点击购车tab按钮-完成，CTA={cta_type}")
+    if cta_type == "pay_deposit":
+        # 有"支付订金"按钮 → 点击进入支付订金页面后返回
+        buycar_op.click_store_pay_deposit_btn()
+        logger.info("[用例34] 支付订金往返流程-完成")
+        return
+    # 有"立即订购"按钮 → 走原有立即订购完整配置流程
     buycar_op.click_store_order_btn()
     logger.info("[用例34] 点击立即订购按钮-完成")
     buycar_op.click_store_config_version_btn()

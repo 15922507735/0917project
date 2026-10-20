@@ -18,6 +18,13 @@ STORE_ORDER_BTN = (
     AppiumBy.ID,
     f"{APP_PACKAGE}:id/btn2",
 )
+# 支付订金按钮 —— 购车页底部 CTA（文本含动态金额，如"支付订金 ¥1999.00"）
+# 注：购车页为 Compose 页面且轮播持续刷新，XPath 查找需 dump 整棵辅助功能树，
+#     易报 "Timed out waiting for the root AccessibilityNodeInfo"，故用 UiSelector 直查
+STORE_PAY_DEPOSIT_BTN = (
+    AppiumBy.ANDROID_UIAUTOMATOR,
+    f'new UiSelector().resourceId("{APP_PACKAGE}:id/btn1").textContains("支付订金")',
+)
 # 购车配置选择页 - "请选择配置" 提示文本（WebView/uni-app 页面）
 STORE_CONFIG_CHOOSE_TIP = (
     AppiumBy.XPATH,

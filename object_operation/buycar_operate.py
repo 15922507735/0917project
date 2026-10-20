@@ -7,6 +7,7 @@ from typing import Any
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import WebDriverException
 from object_operation.webview_operate import WebViewOperate
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.common.by import By
@@ -16,6 +17,7 @@ from page_element.login_page import EXPECT_WAIT_TIMEOUT
 from page_element.buycar_page import (
     STORE_BUY_BTN,
     STORE_ORDER_BTN,
+    STORE_PAY_DEPOSIT_BTN,
     STORE_CONFIG_CHOOSE_TIP,
     STORE_CONFIG_NEXT_BTN,
     STORE_CONFIG_VERSION_BY_NAME,
@@ -65,15 +67,66 @@ class BuycarOperate:
             logger,
             expect_wait_timeout,
         )
-    def click_store_buy_btn(self):
-        """点击购车tab按钮。"""
+    def click_store_buy_btn(self) -> str:
+        """点击购车tab按钮，并校验底部 CTA 类型。
+
+        校验逻辑：等待购车页面加载完成，轮询检查"支付订金"(btn1) 与
+        "立即订购"(btn2) 哪个按钮出现（不同版本/车型状态下底部 CTA 可能不同），
+        由用例侧根据返回值走对应流程。
+
+        轮询中的定位调用做瞬时容错：购车页（Compose）UI 线程繁忙时，
+        UiAutomator2 可能抛 "Timed out waiting for the root AccessibilityNodeInfo"，
+        此类服务端异常不应中断整个等待，跳过本次轮询即可。
+
+        :return: "pay_deposit"=支付订金按钮；"order"=立即订购按钮
+        :raises TimeoutException: 超时后两个按钮均未出现
+        """
+
+        def _find_cta(d):
+            for locator, cta_type in (
+                (STORE_PAY_DEPOSIT_BTN, "pay_deposit"),
+                (STORE_ORDER_BTN, "order"),
+            ):
+                try:
+                    if d.find_elements(*locator):
+                        return cta_type
+                except WebDriverException:
+                    continue
+            return None
+
         self.driver.find_element(*STORE_BUY_BTN).click()
-        # 等待购车页面加载完成，出现立即订购按钮元素
-        WebDriverWait(self.driver, self.expect_wait_timeout).until(
-            EC.presence_of_element_located(STORE_ORDER_BTN)
-        )
-        self.logger.info("购车页面加载成功，出现立即订购按钮")
+        cta_type = WebDriverWait(self.driver, self.expect_wait_timeout).until(_find_cta)
+        self.logger.info(f"购车页面加载成功，底部 CTA 校验结果: {cta_type}")
         sleep(1)
+        return cta_type
+
+    def click_store_pay_deposit_btn(self):
+        """点击支付订金按钮，进入支付订金页面后返回购车页面。
+
+        前置：click_store_buy_btn 已校验当前底部 CTA 为"支付订金"(btn1)。
+
+        业务逻辑：
+            1. 点击支付订金按钮，进入支付订金页面；
+            2. 固定等待页面加载，记录页面现场（Activity / context）便于排查；
+            3. 系统返回键退出，以"支付订金"按钮重新出现为锚点确认回到购车页。
+        """
+        self.driver.find_element(*STORE_PAY_DEPOSIT_BTN).click()
+        self.logger.info("成功点击支付订金按钮")
+        sleep(3)  # 等待支付订金页面加载
+        try:
+            self.logger.info(
+                f"支付订金页面 Activity: {self.driver.current_activity}, "
+                f"context: {self.driver.current_context}"
+            )
+        except Exception as e:
+            self.logger.warning(f"读取支付订金页面信息失败（不影响后续返回）: {e}")
+        self.driver.back()
+        self.logger.info("使用系统返回键退出支付订金页面")
+        # 以支付订金按钮重新出现为锚点，确认回到购车页
+        WebDriverWait(self.driver, self.expect_wait_timeout).until(
+            EC.presence_of_element_located(STORE_PAY_DEPOSIT_BTN)
+        )
+        self.logger.info("返回购车页面成功，支付订金按钮再次出现")
 
     def click_store_order_btn(self):
         """点击立即订购按钮。"""
