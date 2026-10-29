@@ -72,39 +72,43 @@ def _fatie_native_reset(driver, logger) -> None:
 @pytest.mark.regression
 def test_click_post_button(driver, logger):
     """用例 12：点击发帖入口按钮。"""
-    login_op, first_page_op = _build_ops(driver, logger)
-    _ensure_ready(login_op, first_page_op, logger)
+    with allure.step("步骤1：ensure_ready 重置 APP 状态到发现页"):
+        login_op, first_page_op = _build_ops(driver, logger)
+        _ensure_ready(login_op, first_page_op, logger)
 
-    # 切回 NATIVE_APP（避免上一个用例残留 WebView context）
-    try:
-        driver.switch_to.context("NATIVE_APP")
-    except Exception:
-        pass
+    with allure.step("步骤2：切回 NATIVE_APP context（避免上个用例残留 WebView）"):
+        # 切回 NATIVE_APP（避免上一个用例残留 WebView context）
+        try:
+            driver.switch_to.context("NATIVE_APP")
+        except Exception:
+            pass
 
-    # 构造 FatieOperate（依赖 WebViewOperate 才能切 context）
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    fatie_op = FatieOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
-    try:
-        # 点击发帖入口按钮
-        fatie_op.click_post_button()
-        logger.info("[用例12] 点击发帖入口按钮-完成")
-        # 点击发文章按钮
-        fatie_op.click_post_article_button()
-        # 切换到发文章编辑页面的webview
-        fatie_op.switch_to_post_article_webview()
-        logger.info("[用例12] 点击发文章按钮-完成")
-        # 断言页面加载完成，发布按钮元素可见
-        WebDriverWait(driver, EXPECT_WAIT_TIMEOUT).until(
-            EC.presence_of_element_located(PUBLISH_BUTTON)
+    with allure.step("步骤3：构造 FatieOperate（依赖 WebViewOperate）"):
+        webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+        fatie_op = FatieOperate(
+            driver, logger, webview_operate=webview_op,
+            expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
         )
-        logger.info("[用例12] 断言页面加载完成，发布按钮元素存在-完成")
+    try:
+        with allure.step("步骤4：点击发帖入口按钮"):
+            fatie_op.click_post_button()
+            logger.info("[用例12] 点击发帖入口按钮-完成")
+
+        with allure.step("步骤5：点击「发文章」按钮并切换到发文章 WebView"):
+            fatie_op.click_post_article_button()
+            fatie_op.switch_to_post_article_webview()
+            logger.info("[用例12] 点击发文章按钮-完成")
+
+        with allure.step("步骤6：断言发文章页加载完成（发布按钮可见）"):
+            WebDriverWait(driver, EXPECT_WAIT_TIMEOUT).until(
+                EC.presence_of_element_located(PUBLISH_BUTTON)
+            )
+            logger.info("[用例12] 断言页面加载完成，发布按钮元素存在-完成")
     finally:
-        # 收口：无论用例是否成功，都切回 NATIVE_APP context
-        # 避免下一个用例在错的 context 下启动
-        _fatie_native_reset(driver, logger)
+        with allure.step("收口：切回 NATIVE_APP 并回到主 Activity"):
+            # 收口：无论用例是否成功，都切回 NATIVE_APP context
+            # 避免下一个用例在错的 context 下启动
+            _fatie_native_reset(driver, logger)
 
 
 # ===================== 用例 13 =====================
@@ -126,92 +130,98 @@ def test_click_fatie(driver, logger):
       1. _ensure_ready → 切社区 Tab → 点发帖入口 → 点发文章 → 切 WebView
       2. 点上传封面按钮 → 切回原生 → 点选择图片 → 授权 → 勾选图片
     """
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    with allure.step("步骤1：构造 WebViewOperate 并重置 APP 到主 Activity"):
+        webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
 
-    login_op, first_page_op = _build_ops(driver, logger)
-    # 用例 13 兜底：先把 driver 切回 NATIVE + APP 拉回主 Activity
-    # （避免上个用例残留 WebView context / 相册选择器等导致 is_on_discover 误判）
-    try:
-        if "NATIVE_APP" in driver.contexts:
-            driver.switch_to.context("NATIVE_APP")
-    except Exception as e:
-        logger.warning(f"[用例13] 切回 NATIVE 失败: {e.__class__.__name__}")
-
-    # 如果 APP 还在错的 Activity（如 PictureSelectorActivity），按返回键回到主 Activity
-    for _ in range(5):
+        login_op, first_page_op = _build_ops(driver, logger)
+        # 用例 13 兜底：先把 driver 切回 NATIVE + APP 拉回主 Activity
+        # （避免上个用例残留 WebView context / 相册选择器等导致 is_on_discover 误判）
         try:
-            activity = driver.current_activity or ""
+            if "NATIVE_APP" in driver.contexts:
+                driver.switch_to.context("NATIVE_APP")
+        except Exception as e:
+            logger.warning(f"[用例13] 切回 NATIVE 失败: {e.__class__.__name__}")
+
+        # 如果 APP 还在错的 Activity（如 PictureSelectorActivity），按返回键回到主 Activity
+        for _ in range(5):
+            try:
+                activity = driver.current_activity or ""
+            except Exception:
+                break
+            if "QYMainActivity" in activity:
+                break
+            driver.back()
+            time.sleep(0.5)
+
+    with allure.step("步骤2：ensure_ready 重置到发现页并构造 FatieOperate"):
+        _ensure_ready(login_op, first_page_op, logger)
+        # 切回 NATIVE_APP（避免上一个用例残留 WebView context）
+        try:
+            driver.switch_to.context("NATIVE_APP")
         except Exception:
-            break
-        if "QYMainActivity" in activity:
-            break
-        driver.back()
-        time.sleep(0.5)
+            pass
 
-    _ensure_ready(login_op, first_page_op, logger)
-    # 切回 NATIVE_APP（避免上一个用例残留 WebView context）
-    try:
-        driver.switch_to.context("NATIVE_APP")
-    except Exception:
-        pass
+        fatie_op = FatieOperate(
+            driver, logger, webview_operate=webview_op,
+            expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+        )
 
-    fatie_op = FatieOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
+    with allure.step("步骤3：走到发文章页面（发帖入口 → 发文章 → 切 WebView）"):
+        logger.info("[用例13] 完整发帖流程开始")
+        fatie_op.click_post_button()
+        fatie_op.click_post_article_button()
+        fatie_op.switch_to_post_article_webview()
+        logger.info("[用例13] 已进入发文章 WebView 页面")
 
-    logger.info("[用例13] 完整发帖流程开始")
-    # 1. 走到发文章页面
-    fatie_op.click_post_button()
-    fatie_op.click_post_article_button()
-    fatie_op.switch_to_post_article_webview()
-    logger.info("[用例13] 已进入发文章 WebView 页面")
+    with allure.step("步骤4：点击上传封面按钮 → 切回原生相册"):
+        fatie_op.click_upload_cover_button()
+        logger.info("[用例13] 点击上传封面按钮-完成")
+        webview_op.switch_to_native()
+        logger.info("[用例13] 切换到native_app页面-完成")
 
-    # 2. 点击上传封面按钮
-    fatie_op.click_upload_cover_button()
-    logger.info("[用例13] 点击上传封面按钮-完成")
-    # 3. 切换到native_app页面（系统相册选择器）
-    webview_op.switch_to_native()
-    logger.info("[用例13] 切换到native_app页面-完成")
-    # 4. 点击选择图片按钮
-    fatie_op.click_select_image_button()
-    logger.info("[用例13] 点击选择图片按钮-完成")
-    # 5. 点击授权允许按钮（如果出现）
-    fatie_op.click_permission_allow_button()
-    logger.info("[用例13] 点击授权允许按钮-完成")
-    # 6. 点击勾选图片按钮（image_index: 1=第一张, 2=第二张, ...）
-    fatie_op.click_gouxuan_image_button()
-    logger.info("[用例13] 点击勾选图片按钮-完成")
-    # 7. 点击已完成按钮
-    fatie_op.click_confirm_gouxuan_image_button()
-    logger.info("[用例13] 点击已完成按钮-完成")
-    # 8. 点击封面图片确认按钮
-    fatie_op.click_confirm_cover_image_button()
-    logger.info("[用例13] 点击封面图片确认按钮-完成")
-    # 9. 点击标题输入框
-    fatie_op.click_title_input()
-    logger.info("[用例13] 点击标题输入框，并输入标题-完成")
-    # 点击内容输入框
-    fatie_op.click_content_input()
-    logger.info("[用例13] 点击内容输入框，并输入内容-完成")
-    # 点击内容图片上传按钮
-    fatie_op.click_content_image_button()
-    logger.info("[用例13] 点击内容图片上传按钮-完成")
-    # 10. 点击内容图片选择按钮-弹窗
-    fatie_op.click_select_content_image_button()
-    logger.info("[用例13] 点击内容图片选择按钮-弹窗-完成")
-    # 10.5 相册里勾选图片（与封面流程一致）
-    fatie_op.click_gouxuan_image_button()
-    logger.info("[用例13] 相册里勾选图片-完成")
-    # 10.6 点"已完成"按钮回到 H5
-    fatie_op.click_confirm_gouxuan_image_button()
-    logger.info("[用例13] 点击已完成按钮-完成")
-    # 11. 点击确定选择按钮-弹窗
-    fatie_op.click_confirm_queding_image_button()
-    logger.info("[用例13] 点击确定选择按钮-弹窗-完成")
-    # 12. 点击发布按钮
-    fatie_op.click_publish_button()
-    logger.info("[用例13] 点击发布按钮-完成")
+    with allure.step("步骤5：点击选择图片按钮"):
+        fatie_op.click_select_image_button()
+        logger.info("[用例13] 点击选择图片按钮-完成")
+
+    with allure.step("步骤6：点击相册授权「允许」按钮"):
+        fatie_op.click_permission_allow_button()
+        logger.info("[用例13] 点击授权允许按钮-完成")
+
+    with allure.step("步骤7：勾选图片 → 点击「已完成」"):
+        fatie_op.click_gouxuan_image_button()
+        logger.info("[用例13] 点击勾选图片按钮-完成")
+        fatie_op.click_confirm_gouxuan_image_button()
+        logger.info("[用例13] 点击已完成按钮-完成")
+
+    with allure.step("步骤8：点击封面图片确认按钮"):
+        fatie_op.click_confirm_cover_image_button()
+        logger.info("[用例13] 点击封面图片确认按钮-完成")
+
+    with allure.step("步骤9：点击标题输入框并输入标题"):
+        fatie_op.click_title_input()
+        logger.info("[用例13] 点击标题输入框，并输入标题-完成")
+
+    with allure.step("步骤10：点击内容输入框并输入内容"):
+        fatie_op.click_content_input()
+        logger.info("[用例13] 点击内容输入框，并输入内容-完成")
+
+    with allure.step("步骤11：点击内容图片上传按钮 → 选择图片弹窗"):
+        fatie_op.click_content_image_button()
+        logger.info("[用例13] 点击内容图片上传按钮-完成")
+        fatie_op.click_select_content_image_button()
+        logger.info("[用例13] 点击内容图片选择按钮-弹窗-完成")
+
+    with allure.step("步骤12：相册里勾选图片 → 「已完成」→ 「确定选择」"):
+        fatie_op.click_gouxuan_image_button()
+        logger.info("[用例13] 相册里勾选图片-完成")
+        fatie_op.click_confirm_gouxuan_image_button()
+        logger.info("[用例13] 点击已完成按钮-完成")
+        fatie_op.click_confirm_queding_image_button()
+        logger.info("[用例13] 点击确定选择按钮-弹窗-完成")
+
+    with allure.step("步骤13：点击发布按钮"):
+        fatie_op.click_publish_button()
+        logger.info("[用例13] 点击发布按钮-完成")
 
 
 # ===================== 用例 14 =====================
@@ -253,13 +263,18 @@ def test_fatie_input_draft(
     case_id, title, content_text, expected_keyword,
 ):
     """用例14：数据驱动：发帖标题 + 富文本内容输入。"""
-    _navigate_to_fatie_editor(driver, logger, fatie_op)
+    with allure.step(f"步骤1：导航到发帖编辑页（用例数据 {case_id}）"):
+        _navigate_to_fatie_editor(driver, logger, fatie_op)
     try:
-        fatie_op.click_title_input(title)
-        logger.info(f"[{case_id}] 输入标题完成: {title}")
-        fatie_op.click_content_input(content_text, expected_keyword)
-        logger.info(f"[{case_id}] 输入内容 + 断言关键字 '{expected_keyword}' 通过")
+        with allure.step(f"步骤2：输入标题「{title}」"):
+            fatie_op.click_title_input(title)
+            logger.info(f"[{case_id}] 输入标题完成: {title}")
+
+        with allure.step(f"步骤3：输入富文本内容并断言关键字「{expected_keyword}」"):
+            fatie_op.click_content_input(content_text, expected_keyword)
+            logger.info(f"[{case_id}] 输入内容 + 断言关键字 '{expected_keyword}' 通过")
     finally:
-        _fatie_native_reset(driver, logger)
-        # 切到发现 Tab，避免用例 15 找不到"服务"Tab
-        fatie_op.back_to_discover_page()
+        with allure.step("收口：切回 NATIVE_APP 并回到发现页"):
+            _fatie_native_reset(driver, logger)
+            # 切到发现 Tab，避免用例 15 找不到"服务"Tab
+            fatie_op.back_to_discover_page()

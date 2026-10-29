@@ -50,15 +50,21 @@ def test_click_seecar_btn(driver, logger):
     # 注意：本用例不判断登录态——看车 Tab 与 Q05 车型入口在未登录态也可见。
     # 所以也不需要 `if not is_logged_in_session: pytest.skip(...)`。
 
-    login_op, first_page_op = _build_ops(driver, logger)
-    _ensure_ready(login_op, first_page_op, logger)
+    with allure.step("步骤1：ensure_ready 重置 APP 状态到发现页"):
+        login_op, first_page_op = _build_ops(driver, logger)
+        _ensure_ready(login_op, first_page_op, logger)
 
-    seecar_op = SeeCarOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    logger.info("[用例6] 点击看车按钮")
-    seecar_op.click_entry_btn()
-    logger.info("[用例6] 点击看车按钮-完成")
-    seecar_op.click_q05_icon()
-    logger.info("[用例6] 点击 Q05 图标-完成")
+    with allure.step("步骤2：构造 SeeCarOperate"):
+        seecar_op = SeeCarOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+
+    with allure.step("步骤3：点击顶部「看车」Tab"):
+        logger.info("[用例6] 点击看车按钮")
+        seecar_op.click_entry_btn()
+        logger.info("[用例6] 点击看车按钮-完成")
+
+    with allure.step("步骤4：点击 Q05 车型图标"):
+        seecar_op.click_q05_icon()
+        logger.info("[用例6] 点击 Q05 图标-完成")
 
 # ===================== 用例 7 =====================
 @allure.feature("看车 / 社区")
@@ -82,13 +88,17 @@ def test_click_shequ_tab(driver, logger):
         - click_shequ_tab 内部断言「热门话题」元素 (HOT_TOPIC) 可见 = 社区页加载完成。
     """
     # 注意：本用例不判断登录态——社区 Tab 与热门话题在未登录态也可见。
-    login_op, first_page_op = _build_ops(driver, logger)
-    _ensure_ready(login_op, first_page_op, logger)
+    with allure.step("步骤1：ensure_ready 重置 APP 状态到发现页"):
+        login_op, first_page_op = _build_ops(driver, logger)
+        _ensure_ready(login_op, first_page_op, logger)
 
-    shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    logger.info("[用例7] 点击社区 Tab 按钮")
-    shequ_op.click_shequ_tab()
-    logger.info("[用例7] 点击社区 Tab 按钮-完成")
+    with allure.step("步骤2：构造 ShequOperate"):
+        shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+
+    with allure.step("步骤3：点击底部「社区」Tab（内部断言热门话题可见 = 社区页加载完成）"):
+        logger.info("[用例7] 点击社区 Tab 按钮")
+        shequ_op.click_shequ_tab()
+        logger.info("[用例7] 点击社区 Tab 按钮-完成")
 
 
 # ===================== 用例 8 =====================
@@ -117,20 +127,28 @@ def test_click_topic_square(driver, logger):
     login_op, first_page_op = _build_ops(driver, logger)
     _ensure_ready(login_op, first_page_op, logger)
 
-    # click_topic_square 内部会切 WebView，需传入 WebViewOperate
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    shequ_op = ShequOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
-    logger.info("[用例8] 点击话题广场按钮")
-    shequ_op.click_shequ_tab()
-    shequ_op.click_topic_square()
-    logger.info("[用例8] 点击话题广场按钮-完成")
-    shequ_op.click_topic_back_btn()
-    logger.info("[用例8] 点击话题列表返回按钮-完成")
-    shequ_op.click_topic_more_btn()
-    logger.info("[用例8] 点击查看更多按钮-完成")
+    with allure.step("步骤1：构造 ShequOperate（依赖 WebViewOperate，话题广场会切 WebView）"):
+        webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+        shequ_op = ShequOperate(
+            driver, logger, webview_operate=webview_op,
+            expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+        )
+
+    with allure.step("步骤2：切到「社区」页"):
+        shequ_op.click_shequ_tab()
+
+    with allure.step("步骤3：点击「话题广场」按钮（切 WebView）"):
+        logger.info("[用例8] 点击话题广场按钮")
+        shequ_op.click_topic_square()
+        logger.info("[用例8] 点击话题广场按钮-完成")
+
+    with allure.step("步骤4：点击话题列表返回按钮"):
+        shequ_op.click_topic_back_btn()
+        logger.info("[用例8] 点击话题列表返回按钮-完成")
+
+    with allure.step("步骤5：点击「查看更多」按钮进入所有圈子列表页"):
+        shequ_op.click_topic_more_btn()
+        logger.info("[用例8] 点击查看更多按钮-完成")
 
 # ===================== 用例 9 =====================
 @allure.feature("看车 / 社区")
@@ -142,20 +160,22 @@ def test_click_topic_all_page_btn(driver, logger):
     # 方案A：不调 _ensure_ready —— 用例 8 最后一步已停在"所有圈子" WebView 页，
     # 本用例直接在该页面操作，无需（也不能）回发现页，否则会误走前置流程。
     # 注意：必须紧接用例 8 之后运行。
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    shequ_op = ShequOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
-    logger.info("[用例9] 点击所有圈子列表页面地域标签按钮")
-    """用例 9：点击所有圈子列表页面地域标签按钮。"""
-    # 点击所有圈子列表页面地域标签按钮
-    shequ_op.click_topic_all_page_btn()
-    logger.info("[用例9] 点击所有圈子列表页面地域标签按钮-完成")
-    # 点击返回按钮
-    shequ_op.click_topic_all_back_btn()
-    logger.info("[用例9] 点击所有圈子列表页面返回按钮-完成")
-    # 点击返回，出现热门话题元素，则表示成功
+    with allure.step("步骤1：构造 ShequOperate（复用用例8停留的 WebView 页面）"):
+        webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+        shequ_op = ShequOperate(
+            driver, logger, webview_operate=webview_op,
+            expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
+        )
+
+    with allure.step("步骤2：点击所有圈子列表页面地域标签按钮"):
+        logger.info("[用例9] 点击所有圈子列表页面地域标签按钮")
+        shequ_op.click_topic_all_page_btn()
+        logger.info("[用例9] 点击所有圈子列表页面地域标签按钮-完成")
+
+    with allure.step("步骤3：点击所有圈子列表页面返回按钮"):
+        shequ_op.click_topic_all_back_btn()
+        logger.info("[用例9] 点击所有圈子列表页面返回按钮-完成")
+        # 点击返回，出现热门话题元素，则表示成功
 
 # ===================== 用例 10 =====================
 @allure.feature("看车 / 社区")
@@ -170,26 +190,33 @@ def test_click_topic_neirong(driver, logger):
       _ensure_ready → 切社区 Tab → 点最新/视频/关注/聊天 → 返回。
     4 个 Tab 元素都是原生（id/tv_tab + 文本），不需要 WebView。
     """
-    login_op, first_page_op = _build_ops(driver, logger)
-    _ensure_ready(login_op, first_page_op, logger)
+    with allure.step("步骤1：ensure_ready 重置 APP 状态到发现页"):
+        login_op, first_page_op = _build_ops(driver, logger)
+        _ensure_ready(login_op, first_page_op, logger)
 
-    shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
+    with allure.step("步骤2：构造 ShequOperate"):
+        shequ_op = ShequOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
 
-    logger.info("[用例10] 点击社区内容标签-最新、视频、关注、聊天")
-    # 先切到社区页（社区 Tab 在发现页底部）
-    shequ_op.click_shequ_tab()
-    # 点击社区内容标签-最新
-    shequ_op.click_shequ_neirong_new()
-    logger.info("[用例10] 点击社区内容标签-最新-完成")
-    # 点击视频标签
-    shequ_op.click_topic_all_video_btn()
-    logger.info("[用例10] 点击视频标签-完成")
-    # 点击关注标签
-    shequ_op.click_topic_all_follow_btn()
-    logger.info("[用例10] 点击关注标签-完成")
-    # 点击聊天标签
-    shequ_op.click_topic_all_chat_btn()
-    logger.info("[用例10] 点击聊天标签-完成")
-    # 点击返回按钮
-    shequ_op.click_topic_all_chat_back_btn()
-    logger.info("[用例10] 点击聊天列表返回按钮-完成")
+    with allure.step("步骤3：切到「社区」页"):
+        logger.info("[用例10] 点击社区内容标签-最新、视频、关注、聊天")
+        shequ_op.click_shequ_tab()
+
+    with allure.step("步骤4：点击社区内容标签「最新」"):
+        shequ_op.click_shequ_neirong_new()
+        logger.info("[用例10] 点击社区内容标签-最新-完成")
+
+    with allure.step("步骤5：点击「视频」标签"):
+        shequ_op.click_topic_all_video_btn()
+        logger.info("[用例10] 点击视频标签-完成")
+
+    with allure.step("步骤6：点击「关注」标签"):
+        shequ_op.click_topic_all_follow_btn()
+        logger.info("[用例10] 点击关注标签-完成")
+
+    with allure.step("步骤7：点击「聊天」标签"):
+        shequ_op.click_topic_all_chat_btn()
+        logger.info("[用例10] 点击聊天标签-完成")
+
+    with allure.step("步骤8：点击聊天列表返回按钮"):
+        shequ_op.click_topic_all_chat_back_btn()
+        logger.info("[用例10] 点击聊天列表返回按钮-完成")
