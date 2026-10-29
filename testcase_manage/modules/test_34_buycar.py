@@ -4,7 +4,7 @@
   "立即订购"后走对应流程；订金=订金往返，订购=完整配置 + 订购）
 - test_click_ruten_btn（用例 35）：支付定金返回
 
-模块说明：上一用例（用例 33）跑完停在「我的」页面，用 _build_buycar_op_keep 主动重置，
+模块说明：上一用例（用例 33）跑完停在「我的」页面，用 buycar_op_keep fixture 主动重置，
 避免用例 33 跑完后的状态干扰。
 """
 from __future__ import annotations
@@ -12,14 +12,6 @@ from __future__ import annotations
 import allure
 
 import pytest
-
-from object_operation.first_page_operate import FirstPageOperate
-from object_operation.login_operate import LoginOperate
-
-from utils.test_helpers import (
-    build_ops as _build_ops,
-    build_buycar_op_keep as _build_buycar_op_keep,
-)
 
 
 # ===================== 用例 34：购车模块操作 =====================
@@ -29,20 +21,19 @@ from utils.test_helpers import (
 @pytest.mark.story_buyconfig
 @pytest.mark.critical_path
 @pytest.mark.regression
-def test_click_store_buy(driver, logger):
+def test_click_store_buy(driver, logger, first_page_op, buycar_op_keep):
     """用例34：购车模块操作。
 
     注意：本用例不复用 _ensure_ready。上一用例（用例33）跑完停在「我的」页面，
     此时 _ensure_ready 会因为"推荐 Tab 不可见"误判为未在发现页，触发冷启动失败。
-    使用 _build_buycar_op_keep 跳过 ensure_ready 直接复用当前页面状态，
+    使用 buycar_op_keep fixture 跳过 ensure_ready 直接复用当前页面状态，
     由本用例开头手动切回「发现」首页。
     """
     with allure.step("步骤1：切回「发现」Tab（用例33跑完停在「我的」页面）"):
-        login_op, first_page_op = _build_ops(driver, logger)
         first_page_op.click_discover_tab()
 
     with allure.step("步骤2：构造购车操作实例（不带 ensure_ready）"):
-        buycar_op = _build_buycar_op_keep(driver, logger)
+        buycar_op = buycar_op_keep
 
     with allure.step("步骤3：点击购车 Tab 并校验底部 CTA（支付订金 / 立即订购）"):
         cta_type = buycar_op.click_store_buy_btn()
@@ -109,10 +100,10 @@ def test_click_store_buy(driver, logger):
 @pytest.mark.feature_buycar
 @pytest.mark.story_buypay
 @pytest.mark.regression
-def test_click_ruten_btn(driver, logger):
+def test_click_ruten_btn(driver, logger, buycar_op_keep):
     """用例35：点击支付定金返回按钮。"""
     with allure.step("步骤1：构造购车操作实例（复用用例34停留的支付页）"):
-        buycar_op = _build_buycar_op_keep(driver, logger)
+        buycar_op = buycar_op_keep
 
     with allure.step("步骤2：点击支付定金页面返回按钮"):
         buycar_op.click_store_config_pay_btn()

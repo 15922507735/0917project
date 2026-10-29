@@ -6,18 +6,14 @@
 """
 from __future__ import annotations
 
+import time
+
 import allure
 
 import pytest
 
-from object_operation.first_page_operate import FirstPageOperate
-from object_operation.login_operate import LoginOperate
-
 from page_element.login_page import APP_PACKAGE
-from utils.test_helpers import (
-    build_ops as _build_ops,
-    ensure_ready as _ensure_ready,
-)
+from utils.test_helpers import ensure_ready as _ensure_ready
 
 
 # ===================== 用例 1 =====================
@@ -56,7 +52,6 @@ def test_start_app_and_accept_agreement(driver, logger, is_logged_in_session):
             )
             try:
                 driver.activate_app(APP_PACKAGE)
-                import time
                 time.sleep(2)
             except Exception as e:
                 logger.warning(f"[用例1] activate_app 失败: {e}")
@@ -73,7 +68,7 @@ def test_start_app_and_accept_agreement(driver, logger, is_logged_in_session):
 @pytest.mark.feature_login
 @pytest.mark.story_logout
 @pytest.mark.regression
-def test_go_mine_and_logout(driver, logger, is_logged_in_session):
+def test_go_mine_and_logout(driver, logger, is_logged_in_session, login_op, first_page_op):
     """用例 2：进入「我的」Tab 并打开「未登录」入口。
 
     操作步骤：
@@ -92,7 +87,6 @@ def test_go_mine_and_logout(driver, logger, is_logged_in_session):
         pytest.skip("已登录态：用例 2 业务前提是'未登录'，让用例 5 跑主体")
 
     with allure.step("步骤1：ensure_ready 重置 APP 状态到发现页"):
-        login_op, first_page_op = _build_ops(driver, logger)
         _ensure_ready(login_op, first_page_op, logger)
 
     with allure.step("步骤2：点击底部「我的」Tab 进入我的页面"):
@@ -111,7 +105,7 @@ def test_go_mine_and_logout(driver, logger, is_logged_in_session):
 @pytest.mark.critical_path
 @pytest.mark.smoke
 @pytest.mark.regression
-def test_login_with_password(driver, logger, is_logged_in_session):
+def test_login_with_password(driver, logger, is_logged_in_session, login_op, first_page_op):
     """用例 3：使用「手机号 + 密码 + 图形验证码」登录已注册账号。
 
     操作步骤：
@@ -134,8 +128,7 @@ def test_login_with_password(driver, logger, is_logged_in_session):
         pytest.skip("已登录态：用例 3 业务前提是'未登录'，让用例 5 跑主体")
 
     with allure.step("步骤1：ensure_ready 重置 APP 状态"):
-        login_op, _first_page_op = _build_ops(driver, logger)
-        _ensure_ready(login_op, _first_page_op, logger)
+        _ensure_ready(login_op, first_page_op, logger)
 
     with allure.step("步骤2：点击「密码登录」切换按钮"):
         logger.info("[用例3] 密码登录完整流程")

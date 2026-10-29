@@ -1,29 +1,12 @@
 """测试辅助函数（跨用例复用）。
 
-提供构造 operate 实例 + APP 状态重置等公共辅助函数，
-从 testcase_manage/test_business_flow.py 中提取，供多个用例文件复用。
+目前仅保留 ``ensure_ready`` —— 用例开始前保证 APP 处于「发现」首页。
+其余 ``build_*_op`` 构造函数已由 conftest.py 中的 session / function 级 fixture 替代，
+避免每个用例重复构造无状态操作对象。
 """
 from __future__ import annotations
 
 from typing import Any
-
-from selenium.webdriver.remote.webdriver import WebDriver
-
-from page_element.login_page import EXPECT_WAIT_TIMEOUT
-from object_operation.login_operate import LoginOperate
-from object_operation.first_page_operate import FirstPageOperate
-from object_operation.webview_operate import WebViewOperate
-from object_operation.fuwu_operate import FuwuOperate
-from object_operation.buycar_operate import BuycarOperate
-
-
-def build_ops(driver: WebDriver, logger: Any):
-    """根据 session 级 driver 构造 LoginOperate / FirstPageOperate。"""
-    login_op = LoginOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    first_page_op = FirstPageOperate(
-        driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT
-    )
-    return login_op, first_page_op
 
 
 def ensure_ready(login_op, first_page_op, logger) -> None:
@@ -56,11 +39,6 @@ def ensure_ready(login_op, first_page_op, logger) -> None:
 
     # 1.5 兜底：检测到系统级弹窗（包名 com.android.packageinstaller），
     #     说明上一条用例结束时残留了权限授予 / 通知授权弹窗。
-    #     关键：Android 10+ 权限授予弹窗不能用 back() 关闭（必须点"允许/拒绝"按钮），
-    #     所以策略是：
-    #     1) 找"允许"按钮并点掉（最多 2 次尝试）；
-    #     2) 若没找到，回退到按返回键（兜底）；
-    #     3) 重新探测包名 / 发现页。
     try:
         current_pkg = first_page_op.driver.current_package or ""
     except Exception:
@@ -125,7 +103,6 @@ def ensure_ready(login_op, first_page_op, logger) -> None:
             return
 
     # 2. 不在发现页 → 探测是否已在登录页（"密码登录"按钮可见）
-    #    适用：用例 3 紧接用例 2 跑时，APP 已被用例 2 带到登录页。
     try:
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
@@ -139,14 +116,9 @@ def ensure_ready(login_op, first_page_op, logger) -> None:
         )
         return
     except Exception:
-        # 不在登录页，继续
         pass
 
     # 3. 不在发现页/登录页 → 探测是否在协议页 / 引导页
-    #    协议页 = QYLeadingActivity，特征是 Activity 全名 == ".QYLeadingActivity"
-    #    或 Activity 含 "QYLeadingActivity"。
-    #    注意：不能只判断 "com.changan.qiyuan.activity" —— 这是包名，
-    #    "我的"页 (QYMainActivity) 也在这个包下，会被误判为协议页！
     try:
         activity = first_page_op.driver.current_activity or ""
     except Exception:
@@ -163,16 +135,13 @@ def ensure_ready(login_op, first_page_op, logger) -> None:
             logger.warning(
                 f"[ensure_ready] 协议页前置流程部分失败（不影响）: {e}"
             )
-        # 跑完前置后切发现 Tab
         try:
             first_page_op.click_discover_tab()
         except Exception as e:
             logger.warning(f"[ensure_ready] 协议页前置后切发现 Tab 失败: {e}")
         return
 
-    # 4. 其他场景（非发现页 / 非登录页 / 非协议页）→ 主动点"发现" Tab
-    #    例：上一条用例停在"我的"/"社区"/"活动"/"服务"/"购车" Tab。
-    #    （用例 3 登录成功后 APP 跳到"我的"页 QYMainActivity，就属于这个分支。）
+    # 4. 其他场景 → 主动点"发现" Tab
     logger.info(
         "[ensure_ready] 不在发现页（Activity="
         f"{activity}），可能停在'我的'/'社区'/'活动'等 Tab → 主动点「发现」Tab 切回"
@@ -183,51 +152,3 @@ def ensure_ready(login_op, first_page_op, logger) -> None:
         logger.warning(
             f"[ensure_ready] 切发现 Tab 失败（可能已在发现页 / APP 未启动完成）: {e}"
         )
-
-
-def build_fuwu_op(driver: WebDriver, logger: Any) -> FuwuOperate:
-    """构造服务操作实例，前置 ensure_ready 把 APP 拉到发现页。"""
-    login_op, first_page_op = build_ops(driver, logger)
-    ensure_ready(login_op, first_page_op, logger)
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    return FuwuOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
-
-
-def build_fuwu_op_keep(driver: WebDriver, logger: Any) -> FuwuOperate:
-    """构造服务操作实例，不做 ensure_ready 直接复用当前页面。
-
-    用例 16~20 跟在用例 15 之后跑时，APP 已在服务 Tab，强行 ensure_ready
-    会因为"推荐 Tab 不可见"被判定为未在发现页，触发冷启动前置流程失败。
-    本函数只构造实例，不动页面状态，把"是否在服务页"交给 click_fuwu_tab 内部断言。
-    """
-    webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-    return FuwuOperate(
-        driver, logger, webview_operate=webview_op,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
-
-
-def build_buycar_op(driver: WebDriver, logger: Any) -> BuycarOperate:
-    """构造购车操作实例，前置 ensure_ready 把 APP 拉到发现页。"""
-    login_op, first_page_op = build_ops(driver, logger)
-    ensure_ready(login_op, first_page_op, logger)
-    return BuycarOperate(
-        driver, logger,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )
-
-
-def build_buycar_op_keep(driver: WebDriver, logger: Any) -> BuycarOperate:
-    """构造购车操作实例，不做 ensure_ready 直接复用当前页面。
-
-    用例 21 跟在用例 16~20 之后跑时，APP 已在服务 Tab，强行 ensure_ready
-    会因为"推荐 Tab 不可见"被判定为未在发现页，触发冷启动前置流程失败。
-    本函数只构造实例，不动页面状态，把"切回发现 Tab / 购物车 Tab"交给用例自行处理。
-    """
-    return BuycarOperate(
-        driver, logger,
-        expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-    )

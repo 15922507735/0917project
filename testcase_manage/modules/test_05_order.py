@@ -8,16 +8,7 @@ import allure
 
 import pytest
 
-from object_operation.first_page_operate import FirstPageOperate
-from object_operation.login_operate import LoginOperate
-from object_operation.order_operate import OrderOperate
-from object_operation.webview_operate import WebViewOperate
-
-from page_element.login_page import EXPECT_WAIT_TIMEOUT
-from utils.test_helpers import (
-    build_ops as _build_ops,
-    ensure_ready as _ensure_ready,
-)
+from utils.test_helpers import ensure_ready as _ensure_ready
 
 
 # ===================== 用例 5 =====================
@@ -27,7 +18,7 @@ from utils.test_helpers import (
 @pytest.mark.story_aggregate
 @pytest.mark.requires_login
 @pytest.mark.regression
-def test_click_aggregate_btn(driver, logger):
+def test_click_aggregate_btn(driver, logger, login_op, first_page_op, order_op):
     """用例 5：点击聚合页 + 立即订购 + 配置选择页 + 返回聚合页（不点预约试驾）。
 
     操作步骤：
@@ -51,19 +42,11 @@ def test_click_aggregate_btn(driver, logger):
         - click_select_config_back_btn 内部断言切回 NATIVE_APP + 聚合页「预约试驾」按钮可见。
     """
     with allure.step("步骤1：ensure_ready 重置 APP 状态到发现页"):
-        login_op, first_page_op = _build_ops(driver, logger)
         # 已在发现页时 _ensure_ready 会直接 return（不点协议 / 不左滑 / 不点入口 5 次），
         # 避免重复冷启动导致死循环。
         _ensure_ready(login_op, first_page_op, logger)
 
-    with allure.step("步骤2：构造 OrderOperate（依赖 WebViewOperate）"):
-        webview_op = WebViewOperate(driver, logger, expect_wait_timeout=EXPECT_WAIT_TIMEOUT)
-        order_op = OrderOperate(
-            driver, logger, webview_operate=webview_op,
-            expect_wait_timeout=EXPECT_WAIT_TIMEOUT,
-        )
-
-    with allure.step("步骤3：兜底切回「发现」Tab 并点击聚合页入口"):
+    with allure.step("步骤2：兜底切回「发现」Tab 并点击聚合页入口"):
         logger.info("[用例5] 点击聚合页")
         # 兜底再点一次发现 Tab（_ensure_ready 末尾已切过一次）
         try:
@@ -72,9 +55,9 @@ def test_click_aggregate_btn(driver, logger):
             logger.warning(f"[用例5] 切发现 Tab 失败（可能已在发现页）: {e}")
         order_op.click_aggregate_btn()
 
-    with allure.step("步骤4：点击「立即订购」按钮（切 WebView + 等待配置选择页）"):
+    with allure.step("步骤3：点击「立即订购」按钮（切 WebView + 等待配置选择页）"):
         order_op.click_aggregate_order_btn()
 
-    with allure.step("步骤5：点配置选择页返回按钮 → 切回 NATIVE_APP 并断言回到聚合页"):
+    with allure.step("步骤4：点配置选择页返回按钮 → 切回 NATIVE_APP 并断言回到聚合页"):
         order_op.click_select_config_back_btn()
         logger.info("[用例5] 点击聚合页-完成")
